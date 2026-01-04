@@ -145,10 +145,11 @@ public class DatabaseManager {
                 writer.write(b + " ");
             }
 
-            System.out.println("Файл " + filename + " згенеровано для С.");
+            System.out.println("File " + filename + " for С.");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 }
+
