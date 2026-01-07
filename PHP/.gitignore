@@ -1,0 +1,8 @@
+config.php
+*.tmp
+*.env
+database.php
+.idea
+.sql
+/src/config
+config/*
