@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 03 jan. 2026 à 16:37
+-- Généré le : mer. 07 jan. 2026 à 19:42
 -- Version du serveur : 10.4.32-MariaDB
--- Version de PHP : 8.2.12
+-- Version de PHP : 8.3.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -89,9 +89,27 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `address`
+--
+
+DROP TABLE IF EXISTS `address`;
+CREATE TABLE `address` (
+  `id` int(11) NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `line1` varchar(255) NOT NULL,
+  `city` varchar(100) NOT NULL,
+  `postal_code` varchar(20) NOT NULL,
+  `country` varchar(100) NOT NULL DEFAULT 'France',
+  `is_default` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `basket`
 --
 
+DROP TABLE IF EXISTS `basket`;
 CREATE TABLE `basket` (
   `basket_id` int(10) UNSIGNED NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
@@ -105,6 +123,7 @@ CREATE TABLE `basket` (
 -- Structure de la table `basket_item`
 --
 
+DROP TABLE IF EXISTS `basket_item`;
 CREATE TABLE `basket_item` (
   `basket_id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
@@ -114,6 +133,7 @@ CREATE TABLE `basket_item` (
 --
 -- Déclencheurs `basket_item`
 --
+DROP TRIGGER IF EXISTS `trg_bi_before_insert`;
 DELIMITER $$
 CREATE TRIGGER `trg_bi_before_insert` BEFORE INSERT ON `basket_item` FOR EACH ROW BEGIN
     DECLARE v_basket_user INT;
@@ -141,6 +161,7 @@ DELIMITER ;
 -- Structure de la table `brick_spec`
 --
 
+DROP TABLE IF EXISTS `brick_spec`;
 CREATE TABLE `brick_spec` (
   `spec_id` int(10) UNSIGNED NOT NULL,
   `name` varchar(100) NOT NULL,
@@ -201,6 +222,7 @@ INSERT INTO `brick_spec` (`spec_id`, `name`, `width`, `lenght`) VALUES
 -- Structure de la table `color`
 --
 
+DROP TABLE IF EXISTS `color`;
 CREATE TABLE `color` (
   `color_id` int(10) UNSIGNED NOT NULL,
   `hex_code` char(7) NOT NULL,
@@ -490,6 +512,7 @@ INSERT INTO `color` (`color_id`, `hex_code`, `color_name`) VALUES
 -- Structure de la table `images`
 --
 
+DROP TABLE IF EXISTS `images`;
 CREATE TABLE `images` (
   `image_id` int(10) UNSIGNED NOT NULL,
   `image` longtext NOT NULL,
@@ -500,6 +523,7 @@ CREATE TABLE `images` (
 --
 -- Déclencheurs `images`
 --
+DROP TRIGGER IF EXISTS `trg_images_before_insert`;
 DELIMITER $$
 CREATE TRIGGER `trg_images_before_insert` BEFORE INSERT ON `images` FOR EACH ROW BEGIN
     IF NEW.upload_date IS NULL THEN
@@ -512,9 +536,25 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `invoices`
+--
+
+DROP TABLE IF EXISTS `invoices`;
+CREATE TABLE `invoices` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `invoice_number` varchar(50) NOT NULL,
+  `content_json` longtext NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `manufactured_brick`
 --
 
+DROP TABLE IF EXISTS `manufactured_brick`;
 CREATE TABLE `manufactured_brick` (
   `unique_id` bigint(20) UNSIGNED NOT NULL,
   `serial_number` varchar(100) NOT NULL,
@@ -529,6 +569,7 @@ CREATE TABLE `manufactured_brick` (
 --
 -- Déclencheurs `manufactured_brick`
 --
+DROP TRIGGER IF EXISTS `trg_mb_after_insert`;
 DELIMITER $$
 CREATE TRIGGER `trg_mb_after_insert` AFTER INSERT ON `manufactured_brick` FOR EACH ROW BEGIN
     DECLARE v_quantity INT;
@@ -558,9 +599,45 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `mosaic`
+--
+
+DROP TABLE IF EXISTS `mosaic`;
+CREATE TABLE `mosaic` (
+  `id` int(11) NOT NULL,
+  `uploads_id` int(11) NOT NULL,
+  `filter_used` varchar(50) NOT NULL,
+  `size_option` int(11) NOT NULL,
+  `estimated_price` decimal(10,2) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `orders`
+--
+
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE `orders` (
+  `id` int(11) NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `mosaic_id` int(11) NOT NULL,
+  `shipping_address_id` int(11) NOT NULL,
+  `order_number` varchar(50) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'paid',
+  `total_amount` decimal(10,2) NOT NULL,
+  `payment_method` varchar(50) NOT NULL DEFAULT 'card',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `payment`
 --
 
+DROP TABLE IF EXISTS `payment`;
 CREATE TABLE `payment` (
   `payment_id` int(10) UNSIGNED NOT NULL,
   `CB_code` varchar(19) NOT NULL,
@@ -576,6 +653,7 @@ CREATE TABLE `payment` (
 -- Structure de la table `stock`
 --
 
+DROP TABLE IF EXISTS `stock`;
 CREATE TABLE `stock` (
   `stock_id` int(10) UNSIGNED NOT NULL,
   `quantity` int(10) UNSIGNED NOT NULL DEFAULT 0
@@ -587,6 +665,7 @@ CREATE TABLE `stock` (
 -- Structure de la table `stock_color`
 --
 
+DROP TABLE IF EXISTS `stock_color`;
 CREATE TABLE `stock_color` (
   `stock_id` int(10) UNSIGNED NOT NULL,
   `color_id` int(10) UNSIGNED NOT NULL
@@ -595,21 +674,49 @@ CREATE TABLE `stock_color` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `uploads`
+--
+
+DROP TABLE IF EXISTS `uploads`;
+CREATE TABLE `uploads` (
+  `id_upload` int(11) NOT NULL,
+  `user_id` int(10) UNSIGNED NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  `image_data` longblob NOT NULL,
+  `image_type` varchar(50) NOT NULL,
+  `uploaded_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `users`
 --
 
+DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int(10) UNSIGNED NOT NULL,
   `nickname` varchar(50) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `firstname` varchar(100) DEFAULT NULL,
+  `lastname` varchar(100) DEFAULT NULL,
+  `phone_number` varchar(20) DEFAULT NULL,
+  `birth_year` int(11) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `role` varchar(20) DEFAULT 'user',
   `verified` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `two_factor_code` varchar(6) DEFAULT NULL,
+  `two_factor_expires_at` datetime DEFAULT NULL,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déclencheurs `users`
 --
+DROP TRIGGER IF EXISTS `trg_users_before_insert`;
 DELIMITER $$
 CREATE TRIGGER `trg_users_before_insert` BEFORE INSERT ON `users` FOR EACH ROW BEGIN
     IF NEW.created_at IS NULL THEN
@@ -619,9 +726,32 @@ END
 $$
 DELIMITER ;
 
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `user_log`
+--
+
+DROP TABLE IF EXISTS `user_log`;
+CREATE TABLE `user_log` (
+  `log_id` int(11) NOT NULL,
+  `user_id` int(10) UNSIGNED DEFAULT NULL,
+  `level` varchar(50) NOT NULL,
+  `message` text NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Index pour les tables déchargées
 --
+
+--
+-- Index pour la table `address`
+--
+ALTER TABLE `address`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_addr_user` (`user_id`);
 
 --
 -- Index pour la table `basket`
@@ -658,6 +788,14 @@ ALTER TABLE `images`
   ADD KEY `fk_images_user` (`user_id`);
 
 --
+-- Index pour la table `invoices`
+--
+ALTER TABLE `invoices`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `invoice_number` (`invoice_number`),
+  ADD KEY `fk_invoice_order` (`order_id`);
+
+--
 -- Index pour la table `manufactured_brick`
 --
 ALTER TABLE `manufactured_brick`
@@ -667,6 +805,23 @@ ALTER TABLE `manufactured_brick`
   ADD KEY `fk_mb_color` (`color_id`),
   ADD KEY `fk_mb_stock` (`stock_id`),
   ADD KEY `fk_mb_spec` (`spec_id`);
+
+--
+-- Index pour la table `mosaic`
+--
+ALTER TABLE `mosaic`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_mosaic_upload` (`uploads_id`);
+
+--
+-- Index pour la table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `order_number` (`order_number`),
+  ADD KEY `fk_order_user` (`user_id`),
+  ADD KEY `fk_order_mosaic` (`mosaic_id`),
+  ADD KEY `fk_order_addr` (`shipping_address_id`);
 
 --
 -- Index pour la table `payment`
@@ -689,6 +844,13 @@ ALTER TABLE `stock_color`
   ADD KEY `fk_sc_color` (`color_id`);
 
 --
+-- Index pour la table `uploads`
+--
+ALTER TABLE `uploads`
+  ADD PRIMARY KEY (`id_upload`),
+  ADD KEY `fk_uploads_user` (`user_id`);
+
+--
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
@@ -696,8 +858,21 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Index pour la table `user_log`
+--
+ALTER TABLE `user_log`
+  ADD PRIMARY KEY (`log_id`),
+  ADD KEY `fk_log_user` (`user_id`);
+
+--
 -- AUTO_INCREMENT pour les tables déchargées
 --
+
+--
+-- AUTO_INCREMENT pour la table `address`
+--
+ALTER TABLE `address`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `basket`
@@ -709,25 +884,43 @@ ALTER TABLE `basket`
 -- AUTO_INCREMENT pour la table `brick_spec`
 --
 ALTER TABLE `brick_spec`
-  MODIFY `spec_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `spec_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `color`
 --
 ALTER TABLE `color`
-  MODIFY `color_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10000;
+  MODIFY `color_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `images`
 --
 ALTER TABLE `images`
-  MODIFY `image_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `image_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `invoices`
+--
+ALTER TABLE `invoices`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `manufactured_brick`
 --
 ALTER TABLE `manufactured_brick`
   MODIFY `unique_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `mosaic`
+--
+ALTER TABLE `mosaic`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `payment`
@@ -742,14 +935,32 @@ ALTER TABLE `stock`
   MODIFY `stock_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `uploads`
+--
+ALTER TABLE `uploads`
+  MODIFY `id_upload` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `user_log`
+--
+ALTER TABLE `user_log`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Contraintes pour les tables déchargées
 --
+
+--
+-- Contraintes pour la table `address`
+--
+ALTER TABLE `address`
+  ADD CONSTRAINT `fk_addr_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Contraintes pour la table `basket`
@@ -772,6 +983,12 @@ ALTER TABLE `images`
   ADD CONSTRAINT `fk_images_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
+-- Contraintes pour la table `invoices`
+--
+ALTER TABLE `invoices`
+  ADD CONSTRAINT `fk_invoice_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
+
+--
 -- Contraintes pour la table `manufactured_brick`
 --
 ALTER TABLE `manufactured_brick`
@@ -779,6 +996,20 @@ ALTER TABLE `manufactured_brick`
   ADD CONSTRAINT `fk_mb_image` FOREIGN KEY (`image_id`) REFERENCES `images` (`image_id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_mb_spec` FOREIGN KEY (`spec_id`) REFERENCES `brick_spec` (`spec_id`),
   ADD CONSTRAINT `fk_mb_stock` FOREIGN KEY (`stock_id`) REFERENCES `stock` (`stock_id`);
+
+--
+-- Contraintes pour la table `mosaic`
+--
+ALTER TABLE `mosaic`
+  ADD CONSTRAINT `fk_mosaic_upload` FOREIGN KEY (`uploads_id`) REFERENCES `uploads` (`id_upload`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `fk_order_addr` FOREIGN KEY (`shipping_address_id`) REFERENCES `address` (`id`),
+  ADD CONSTRAINT `fk_order_mosaic` FOREIGN KEY (`mosaic_id`) REFERENCES `mosaic` (`id`),
+  ADD CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
 
 --
 -- Contraintes pour la table `payment`
@@ -792,6 +1023,18 @@ ALTER TABLE `payment`
 ALTER TABLE `stock_color`
   ADD CONSTRAINT `fk_sc_color` FOREIGN KEY (`color_id`) REFERENCES `color` (`color_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_sc_stock` FOREIGN KEY (`stock_id`) REFERENCES `stock` (`stock_id`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `uploads`
+--
+ALTER TABLE `uploads`
+  ADD CONSTRAINT `fk_uploads_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `user_log`
+--
+ALTER TABLE `user_log`
+  ADD CONSTRAINT `fk_log_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
