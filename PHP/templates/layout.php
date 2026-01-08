@@ -81,10 +81,7 @@
 </div>
 
 <footer style="text-align:center; padding:20px; margin-top:50px; border-top:1px solid #ccc;">
-    <p>&copy; <?= date('Y') ?> Img2Brick. All rights reserved.</p>
-    <p>
-        <a href="https://github.com/Issam-BH/img2brick" target="_blank">View code on GitHub</a>
-    </p>
+    <p>&copy; <?= date('Y') ?> SaeLego. All rights reserved.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
