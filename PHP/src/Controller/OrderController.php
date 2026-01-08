@@ -48,7 +48,7 @@ class OrderController {
                 ':line1' => $_POST['address'],
                 ':city' => $_POST['city'],
                 ':cp' => $_POST['zip'],
-                ':country' => 'France'
+                ':country' => $_POST['country'] ?? 'FR'
             ]);
             $addressId = $pdo->lastInsertId();
 
@@ -79,7 +79,7 @@ class OrderController {
 
             $invoiceData = [
                 'client' => ['firstname' => $user['firstname'], 'lastname' => $user['lastname'], 'email' => $user['email']],
-                'shipping_address' => ['line1' => $_POST['address'], 'city' => $_POST['city'], 'zip' => $_POST['zip'], 'country' => 'France'],
+                'shipping_address' => ['line1' => $_POST['address'], 'city' => $_POST['city'], 'zip' => $_POST['zip'], 'country' => $_POST['country'] ?? 'FR'],
                 'items' => [[
                     'description' => "Mosaïque LEGO® (" . $_POST['size_option'] . "x" . $_POST['size_option'] . ")",
                     'quantity' => 1,

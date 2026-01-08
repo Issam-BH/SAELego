@@ -16,18 +16,37 @@ class MosaicService {
 
         try {
             copy($this->bricksPath, $tmpDir . '/briques.txt');
-
             $this->convertImageToTxt($sourceImagePath, $tmpDir . '/image.txt');
 
             $command = escapeshellcmd($this->binPath) . " " . escapeshellarg($tmpDir);
-            $output = shell_exec($command);
+            shell_exec($command);
 
-            $resultFile = $tmpDir . '/outV3.txt';
-            if (!file_exists($resultFile)) {
-                throw new Exception("Le programme C n'a pas généré de sortie.");
+            $outputs = [
+                'optimized' => ['file' => 'outAnyShape.txt', 'label' => 'Formes Optimisées'],
+                'standard'  => ['file' => 'outV3.txt',       'label' => 'Standard (1x1, 2x2, 4x2)'],
+                'cheap'     => ['file' => 'outCheap.txt',    'label' => 'Économique'],
+                'reference' => ['file' => 'out11.txt',       'label' => 'Pixel Art (1x1 seulement)']
+            ];
+
+            $results = [];
+
+            foreach ($outputs as $key => $config) {
+                $filePath = $tmpDir . '/' . $config['file'];
+                if (file_exists($filePath)) {
+                    $parsed = $this->parseResultFile($filePath);
+                    if ($parsed) {
+                        $results[$key] = [
+                            'label'  => $config['label'],
+                            'data'   => $parsed['bricks'],
+                            'cost'   => $parsed['cost'],
+                            'count'  => $parsed['count'],
+                            'error'  => $parsed['error']
+                        ];
+                    }
+                }
             }
 
-            return $this->parseResultFile($resultFile);
+            return $results;
 
         } finally {
         }
@@ -39,8 +58,10 @@ class MosaicService {
         if ($ext === 'jpg' || $ext === 'jpeg') $img = imagecreatefromjpeg($imgParams);
         elseif ($ext === 'png') $img = imagecreatefrompng($imgParams);
         else throw new Exception("Format non supporté");
+        
         $smallImg = imagecreatetruecolor($size, $size);
         imagecopyresampled($smallImg, $img, 0, 0, 0, 0, $size, $size, imagesx($img), imagesy($img));
+        
         $content = "$size $size\n";
         for ($y = 0; $y < $size; $y++) {
             for ($x = 0; $x < $size; $x++) {
@@ -60,7 +81,14 @@ class MosaicService {
 
     private function parseResultFile($path) {
         $lines = file($path);
-        array_shift($lines); 
+        if (empty($lines)) return null;
+
+        $header = array_shift($lines); 
+        $meta = sscanf($header, "%d %d %d %d");
+        
+        $count = $meta[0] ?? 0;
+        $cost = $meta[1] ?? 0;
+        $error = $meta[2] ?? 0;
 
         $bricks = [];
         foreach ($lines as $line) {
@@ -75,7 +103,13 @@ class MosaicService {
                 ];
             }
         }
-        return $bricks;
+        
+        return [
+            'bricks' => $bricks,
+            'count'  => $count,
+            'cost'   => $cost,
+            'error'  => $error
+        ];
     }
 }
 ?>

@@ -51,4 +51,20 @@ class EmailService {
 
         return self::sendEmail($email, $subject, $body);
     }
+
+public static function sendResetLink($email, $link) {
+    $subject = "Réinitialisation de votre mot de passe - SAELego";
+    $body = "
+    <div style='font-family: Arial, sans-serif; color: #333;'>
+        <h2>Mot de passe oublié ?</h2>
+        <p>Nous avons reçu une demande de réinitialisation pour votre compte SAELego.</p>
+        <p>Cliquez sur le lien ci-dessous pour changer votre mot de passe :</p>
+        <p><a href='$link' style='background-color: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Réinitialiser mon mot de passe</a></p>
+        <p>Ce lien est valide pour <strong>1 heure</strong>.</p>
+        <hr>
+        <small>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</small>
+    </div>";
+
+    return self::sendEmail($email, $subject, $body);
+}
 }

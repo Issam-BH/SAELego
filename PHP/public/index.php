@@ -2,10 +2,15 @@
 session_start();
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../src/Service/LanguageService.php';
+require_once __DIR__ . '/../src/Service/Translator.php';
 require_once __DIR__ . '/../src/Service/UserSession.php';
 require_once __DIR__ . '/../src/Service/EmailService.php';
 require_once __DIR__ . '/../src/Controller/AuthController.php';
 require_once __DIR__ . '/../src/Controller/MosaicController.php';
+
+// Initialiser la langue
+LanguageService::initialize();
 
 $page = $_GET['page'] ?? 'home';
 

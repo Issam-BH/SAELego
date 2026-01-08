@@ -168,7 +168,7 @@ class AuthController {
                 $stmt = $pdo->prepare("UPDATE users SET reset_token = ?, reset_expires_at = ? WHERE user_id = ?");
                 $stmt->execute([$token, $expires, $user['user_id']]);
 
-                $resetLink = "https://etudiant.univ-eiffel.fr/~issam.ben-hamouda/index.php?page=reset_password&token=" . $token;
+                $resetLink = BASE_URL . "/index.php?page=reset_password&token=" . $token;
 
                 $body = "Hi " . htmlspecialchars($user['nickname']) . ",<br>To reset your password, click here: <a href='$resetLink'>Reset Password</a><br>This link expires in 1 hour.";
 
