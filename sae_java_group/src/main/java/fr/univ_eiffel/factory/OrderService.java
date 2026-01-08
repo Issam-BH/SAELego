@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.Map;
 
 public class OrderService {
-    private static final String API_URL = "https://legofactory.plade.org";
+    private static final String API_URL = "http://localhost:8000";
     private final String email;
     private final String apiKey;
     private final Gson gson = new Gson();
@@ -32,9 +32,25 @@ public class OrderService {
     public boolean confirmOrder(String quoteId) {
         try {
             HttpURLConnection conn = createConn("/ordering/order/" + quoteId, "POST");
-            conn.getOutputStream().write("{}".getBytes());
-            return conn.getResponseCode() == 200;
-        } catch (Exception e) { return false; }
+            conn.getOutputStream().write("{}".getBytes()); 
+            
+            int status = conn.getResponseCode();
+            if (status == 200) {
+                return true;
+            } else {
+                System.err.println("Confirm Error Status: " + status);
+                try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getErrorStream()))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        System.err.println("Server Message: " + line);
+                    }
+                }
+                return false;
+            }
+        } catch (Exception e) { 
+            e.printStackTrace();
+            return false; 
+        }
     }
 
     private HttpURLConnection createConn(String path, String method) throws Exception {
