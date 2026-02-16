@@ -26,7 +26,7 @@
                 </div>
 
                 <h4 class="mt-4">Paiement</h4>
-                <div class="alert alert-info">Paiement simulé par carte bancaire (Sandbox)</div>
+                <div class="alert alert-info">Paiement par carte bancaire</div>
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <h3>Total: <?= number_format($price, 2) ?> €</h3>

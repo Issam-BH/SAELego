@@ -44,7 +44,7 @@
                                     <?= number_format($m['cost'] / 100, 2) ?> €
                                 </h2>
                                 <p class="lead">
-                                    <i class="bi bi-grid-3x3"></i> <strong><?= $m['count'] ?></strong> pièces LEGO®
+                                    <i class="bi bi-grid-3x3"></i> <strong><?= $m['count'] ?></strong> pièces LEGO
                                 </p>
                                 <small class="text-muted">Score de précision : <?= $m['error'] ?></small>
                             </div>
