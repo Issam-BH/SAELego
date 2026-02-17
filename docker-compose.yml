@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: saelego_app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./PHP:/var/www/html
+      - ./C:/var/www/html/C_backend
+      - ./sae_java_group:/var/www/html/java_backend
+    environment:
+      - DB_HOST=db
+      - DB_NAME=lego_db
+      - DB_USER=user
+      - DB_PASS=password
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: saelego_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: lego_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - ./SQL/dump_lego_app.sql:/docker-entrypoint-initdb.d/dump.sql
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
