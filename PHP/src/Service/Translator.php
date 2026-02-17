@@ -58,6 +58,10 @@ class Translator {
             'full_address' => 'Full Address',
             'security_compliance' => 'Security compliance: 12 characters min, including Uppercase, lowercase, number and symbol.',
             'already_have_account' => 'Already have an account?',
+            // Ajouts pour les erreurs SQL
+            'ERR_STOCK_INSUFFICIENT' => 'Insufficient stock for this item.',
+            'ERR_INVALID_AMOUNT' => 'The order amount is invalid.',
+            'ERR_MISSING_USER' => 'User identification is missing for this order.'
         ],
         'fr' => [
             'home' => 'Accueil',
@@ -115,6 +119,10 @@ class Translator {
             'full_address' => 'Adresse complète',
             'security_compliance' => 'Conformité de sécurité: 12 caractères min, incluant Majuscule, minuscule, chiffre et symbole.',
             'already_have_account' => 'Vous avez déjà un compte?',
+            // Ajouts pour les erreurs SQL
+            'ERR_STOCK_INSUFFICIENT' => 'Stock insuffisant pour cet article.',
+            'ERR_INVALID_AMOUNT' => 'Le montant de la commande est invalide.',
+            'ERR_MISSING_USER' => 'L\'utilisateur est manquant pour cette commande.'
         ]
     ];
 
@@ -130,7 +138,7 @@ class Translator {
     }
 
     /**
-     * Ajoute une traduction
+     * Ajoute une traduction dynamiquement
      */
     public static function add(string $key, string $en, string $fr = '') {
         self::$translations['en'][$key] = $en;

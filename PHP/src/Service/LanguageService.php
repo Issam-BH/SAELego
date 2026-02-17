@@ -8,6 +8,11 @@ class LanguageService {
      * Initialise la langue de l'utilisateur
      */
     public static function initialize() {
+        // Démarrer la session si elle n'est pas déjà active pour stocker la langue
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         // Vérifier si une langue est passée en paramètre GET (priorité absolue)
         if (isset($_GET['lang']) && in_array($_GET['lang'], self::$supportedLanguages)) {
             self::$currentLanguage = $_GET['lang'];
@@ -34,7 +39,7 @@ class LanguageService {
     }
     
     /**
-     * Définit la langue
+     * Définit la langue manuellement
      */
     public static function setLanguage(string $lang) {
         if (in_array($lang, self::$supportedLanguages)) {
@@ -63,7 +68,7 @@ class LanguageService {
     }
     
     /**
-     * Génère une URL avec le paramètre de langue
+     * Génère une URL en conservant le paramètre de langue
      */
     public static function getURLWithLanguage($page = null, $params = []): string {
         if ($page === null) {
@@ -72,20 +77,17 @@ class LanguageService {
         
         $url = '?page=' . urlencode($page);
         
-        // Ajouter les paramètres supplémentaires
         foreach ($params as $key => $value) {
             $url .= '&' . urlencode($key) . '=' . urlencode($value);
         }
         
-        // Ajouter la langue
         $url .= '&lang=' . self::$currentLanguage;
         
         return $url;
     }
     
     /**
-     * Retourne le texte traduit selon la langue courante
-     * Utilise les colonnes name_en/name_fr pour les couleurs par exemple
+     * Sélectionne la chaîne traduite selon la langue active
      */
     public static function getTranslatedField($enText, $frText = null): string {
         if (self::$currentLanguage === 'fr' && $frText !== null) {

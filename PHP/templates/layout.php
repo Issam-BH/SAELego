@@ -4,85 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bricks App</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --primary-gradient: linear-gradient(90deg, #F06292 0%, #7B1FA2 100%);
+            --accent-green: #33FF77;
+            --accent-green-hover: #2ce66b;
+            --text-color: #333;
+            --bg-color: #F4F4F4;
+            --card-radius: 16px;
+        }
+
         body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
+
+        /* Titres en Fredoka (Rond et Fun) */
+        h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Navbar avec Dégradé */
+        .navbar-custom {
+            background: var(--primary-gradient);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            color: white !important;
+            letter-spacing: 1px;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+        .nav-link:hover {
+            transform: translateY(-2px);
+            color: #fff !important;
+        }
+
+        /* Conteneur principal */
         .main-container {
             flex: 1;
+            padding-top: 40px;
+            padding-bottom: 40px;
         }
-        .language-selector {
-            display: flex;
-            gap: 8px;
+
+        /* Cards style "Panel" */
+        .card, .bg-white.rounded {
+            border: none;
+            border-radius: var(--card-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+            padding: 20px;
+        }
+
+        /* Boutons personnalisés */
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: 'Fredoka', sans-serif;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary, .btn-success {
+            background-color: var(--accent-green);
+            border: none;
+            color: #222; /* Texte foncé pour contraste sur vert fluo */
+            box-shadow: 0 4px 6px rgba(51, 255, 119, 0.3);
+        }
+        
+        .btn-primary:hover, .btn-success:hover, .btn-primary:active, .btn-success:active {
+            background-color: var(--accent-green-hover);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(51, 255, 119, 0.4);
+        }
+
+        .btn-outline-primary {
+            color: #7B1FA2;
+            border-color: #7B1FA2;
+        }
+        .btn-outline-primary:hover {
+            background-color: #7B1FA2;
+            color: white;
+            border-color: #7B1FA2;
+        }
+
+        /* Inputs plus ronds */
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+        }
+        .form-control:focus {
+            border-color: #F06292;
+            box-shadow: 0 0 0 4px rgba(240, 98, 146, 0.1);
+        }
+
+        /* Language Selector */
         .language-selector a {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
             text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
         .language-selector a.active {
-            background-color: rgba(255,255,255,0.3);
-            font-weight: bold;
+            background: white;
+            color: #7B1FA2;
         }
-        .language-selector a:hover {
-            background-color: rgba(255,255,255,0.2);
+
+        footer {
+            background: white;
+            margin-top: auto;
+            border-top: none;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.02);
+            padding: 30px 0;
+            font-size: 0.9rem;
+            color: #888;
         }
     </style>
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
-        <a class="navbar-brand" href="index.php?page=home">Bricks App</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
+        <a class="navbar-brand" href="index.php?page=home">
+            <i class="bi bi-grid-3x3-gap-fill me-2"></i>IMG2BRICKS
+        </a>
+        <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <i class="bi bi-list fs-1"></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="navbar-nav ms-auto">
-                <!-- Language Selector -->
-                <div class="nav-link">
+            <div class="navbar-nav ms-auto align-items-center">
+                
+                <div class="nav-item me-3">
                     <div class="language-selector">
                         <?php 
                         $currentLang = LanguageService::getCurrentLanguage();
                         $currentPage = $_GET['page'] ?? 'home';
-                        // Conserver tous les paramètres GET existants sauf 'lang'
-                        $params = $_GET;
                         foreach (LanguageService::getSupportedLanguages() as $lang): 
                         ?>
                             <a href="?page=<?= htmlspecialchars($currentPage) ?>&lang=<?= $lang ?>" 
-                               class="<?= ($currentLang === $lang) ? 'active' : '' ?>"
-                               style="color: white;">
-                                <?= ($lang === 'en') ? 'EN' : 'FR' ?>
+                               class="<?= ($currentLang === $lang) ? 'active' : '' ?>">
+                                <?= strtoupper($lang) ?>
                             </a>
                         <?php endforeach; ?>
                     </div>
                 </div>
 
                 <?php if (class_exists('UserSession') && UserSession::isAuthenticated()): ?>
-                    <span class="nav-link text-white"><?= Translator::get('hello') ?>, <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Member') ?></span>
+                    <span class="nav-link me-2">👋 <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Member') ?></span>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('history') ?>"><?= Translator::get('my_orders') ?></a>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('profile') ?>"><?= Translator::get('my_profile') ?></a>
-                    <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('logout') ?>"><?= Translator::get('logout') ?></a>
+                    <a class="btn btn-sm btn-light text-primary ms-2 fw-bold" href="<?= LanguageService::getURLWithLanguage('logout') ?>" style="border-radius: 20px; padding: 5px 15px;"><?= Translator::get('logout') ?></a>
                 <?php else: ?>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('login') ?>"><?= Translator::get('login') ?></a>
-                    <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('register') ?>"><?= Translator::get('register') ?></a>
+                    <a class="btn btn-light text-primary ms-2 fw-bold" href="<?= LanguageService::getURLWithLanguage('register') ?>" style="border-radius: 20px;"><?= Translator::get('register') ?></a>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 </nav>
 
-<div class="container bg-white p-4 rounded shadow-sm main-container">
+<div class="container main-container">
     <?= $content ?>
 </div>
 
-<footer style="text-align:center; padding:20px; margin-top:50px; border-top:1px solid #ccc;">
-    <p>&copy; <?= date('Y') ?> SaeLego. All rights reserved.</p>
+<footer>
+    <div class="container text-center">
+        <p class="mb-0">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
+    </div>
 </footer>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
