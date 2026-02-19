@@ -2,30 +2,34 @@
 
 class ColorService {
     /**
-     * Récupère toutes les couleurs avec le nom dans la bonne langue
+     * Récupère toutes les couleurs avec le nom traduit
      */
     public static function getAllColors($pdo) {
-        $lang = LanguageService::getCurrentLanguage();
-        $nameColumn = ($lang === 'fr') ? 'name_fr' : 'name_en';
-        
-        $sql = "SELECT color_id, hex_code, $nameColumn as color_name FROM color ORDER BY color_id";
+        $sql = "SELECT color_id, hex_code, name_en, name_fr FROM color ORDER BY color_id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
+        $colors = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($colors as &$color) {
+            $color['color_name'] = LanguageService::getTranslatedField($color['name_en'], $color['name_fr']);
+        }
+        
+        return $colors;
     }
     
     /**
      * Récupère une couleur spécifique
      */
     public static function getColorById($pdo, $colorId) {
-        $lang = LanguageService::getCurrentLanguage();
-        $nameColumn = ($lang === 'fr') ? 'name_fr' : 'name_en';
-        
-        $sql = "SELECT color_id, hex_code, name_en, name_fr, $nameColumn as color_name FROM color WHERE color_id = ?";
+        $sql = "SELECT color_id, hex_code, name_en, name_fr FROM color WHERE color_id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$colorId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $row['color_name'] = LanguageService::getTranslatedField($row['name_en'], $row['name_fr']);
+        }
+        
+        return $row;
     }
 }
