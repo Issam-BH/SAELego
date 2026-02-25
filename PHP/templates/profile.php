@@ -44,6 +44,17 @@
                         <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user->getPhoneNumber() ?? '') ?>">
                     </div>
 
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" name="totp_enabled" class="form-check-input" id="totp_enabled" value="1" <?= ($user->getTotpEnabled() ?? false) ? 'checked' : '' ?>>
+                        <label class="form-check-label small fw-bold text-muted" for="totp_enabled">Activer l'authentification par application (Google Auth)</label>
+                    </div>
+
+                    <?php if ($user->getTotpEnabled()): ?>
+                        <div class="mb-4">
+                            <a href="index.php?page=setup_2fa" class="btn btn-outline-info btn-sm">Configurer l'application (QR Code)</a>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary px-4">Enregistrer les modifications</button>
                     </div>

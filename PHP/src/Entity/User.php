@@ -18,6 +18,9 @@ class User {
     private $reset_token;
     private $reset_expires_at;
 
+    private $totp_secret;
+    private $totp_enabled;
+
     public function __construct(array $data = []) {
         if (!empty($data)) $this->hydrate($data);
     }
@@ -45,6 +48,9 @@ class User {
     public function getTwoFactorExpiresAt() { return $this->two_factor_expires_at; }
     public function isVerified() { return $this->verified; }
 
+    public function getTotpSecret() { return $this->totp_secret; }
+    public function getTotpEnabled() { return $this->totp_enabled; }
+
     public function setUserId($id) { $this->user_id = $id; }
     public function setNickname($n) { $this->nickname = $n; }
     public function setUsername($n) { $this->nickname = $n; }
@@ -62,4 +68,8 @@ class User {
     public function setCreatedAt($d) { $this->created_at = $d; }
     public function setResetToken($t) { $this->reset_token = $t; }
     public function setResetExpiresAt($d) { $this->reset_expires_at = $d; }
+
+    public function setTotpSecret($s) { $this->totp_secret = $s; }
+    public function setTotpEnabled($e) { $this->totp_enabled = $e; }
+
 }

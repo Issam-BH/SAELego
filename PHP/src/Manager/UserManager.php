@@ -50,7 +50,8 @@ class UserManager {
 
     public function updateProfile(User $user) {
         $sql = "UPDATE users SET firstname = :first, lastname = :last, email = :email, 
-                address = :addr, phone_number = :phone WHERE user_id = :id";
+                address = :addr, phone_number = :phone, totp_secret = :totp_secret, totp_enabled = :totp_enabled
+                WHERE user_id = :id";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             ':first' => $user->getFirstname(),
@@ -58,6 +59,8 @@ class UserManager {
             ':email' => $user->getEmail(),
             ':addr'  => $user->getAddress(),
             ':phone' => $user->getPhoneNumber(),
+            'totp_secret' => $user->getTotpSecret(),
+            'totp_enabled' => $user->getTotpEnabled() ? 1 : 0,
             ':id'    => $user->getIdUser()
         ]);
     }

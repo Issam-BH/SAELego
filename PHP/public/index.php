@@ -30,6 +30,11 @@ switch ($page) {
         $controller = new AuthController();
         $controller->verify2FA();
         break;
+    
+    case 'setup_2fa':
+        $controller = new AuthController();
+        $controller->setup2FA();
+        break;
 
     case 'logout':
         $controller = new AuthController();
@@ -110,3 +115,8 @@ switch ($page) {
         echo "</div>";
         break;
 }
+
+
+?>
+
+

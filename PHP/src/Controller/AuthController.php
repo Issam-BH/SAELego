@@ -3,6 +3,7 @@ require_once __DIR__ . '/../Manager/UserManager.php';
 require_once __DIR__ . '/../Service/UserSession.php';
 require_once __DIR__ . '/../Service/EmailService.php';
 require_once __DIR__ . '/../Service/Captcha.php';
+require_once __DIR__ . '/../Service/TwoFactorAuthLight.php';
 
 class AuthController {
 
@@ -23,12 +24,16 @@ class AuthController {
                 $user = $manager->verifyPassword($_POST['username'], $_POST['password']);
 
                 if ($user) {
-                    $code = $manager->generate2FACode($user);
-
-                    EmailService::send2FACode($user->getEmail(), $code);
-
                     if (session_status() === PHP_SESSION_NONE) session_start();
                     $_SESSION['2fa_user_id'] = $user->getIdUser();
+
+                    if ($user->getTotpEnabled()) {
+                        $_SESSION['2fa_type'] = 'totp';
+                    } else {
+                        $_SESSION['2fa_type'] = 'email';
+                        $code = $manager->generate2FACode($user);
+                        EmailService::send2FACode($user->getEmail(), $code);
+                    }
 
                     header('Location: index.php?page=2fa');
                     exit;
@@ -100,15 +105,28 @@ class AuthController {
         }
 
         $error = null;
+        $manager = new UserManager();
+        $user = $manager->getUserById($_SESSION['2fa_user_id']);
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $code = $_POST['code'];
-            $manager = new UserManager();
-            $user = $manager->verify2FACode($_SESSION['2fa_user_id'], $code);
+            $isValid = false;
 
-            if ($user) {
+            if (isset($_SESSION['2fa_type']) && $_SESSION['2fa_type'] === 'totp') {
+                $tfa = new TwoFactorAuthLight();
+                if ($tfa->verifyCode($user->getTotpSecret(), $code)) {
+                    $isValid = true;
+                }
+            } else {
+                if ($manager->verify2FACode($_SESSION['2fa_user_id'], $code)) {
+                    $isValid = true;
+                }
+            }
+
+            if ($isValid) {
                 UserSession::login($user->getIdUser(), $user->getUsername(), $user->getRole());
-
                 unset($_SESSION['2fa_user_id']);
+                unset($_SESSION['2fa_type']);
                 header('Location: index.php?page=home');
                 exit;
             } else {
@@ -116,6 +134,42 @@ class AuthController {
             }
         }
         require __DIR__ . '/../../templates/2fa.php';
+    }
+
+    public function setup2FA() {
+        if (!UserSession::isAuthenticated()) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
+        require_once __DIR__ . '/../Service/TwoFactorAuthLight.php';
+        require_once __DIR__ . '/../../phpqrcode/qrlib.php';
+
+        $manager = new UserManager();
+        $user = $manager->getUserById(UserSession::getUserId());
+
+        $tfa = new TwoFactorAuthLight();
+
+        if (!$user->getTotpSecret()) {
+            $secret = $tfa->createSecret();
+            $user->setTotpSecret($secret);
+            $manager->updateProfile($user); 
+        }
+
+        $qrCodeUrl = $tfa->getQRCodeUrl($user->getEmail(), $user->getTotpSecret(), 'LegoSite');
+
+
+        if (ob_get_level()) ob_end_clean(); 
+
+        ob_start();
+        QRcode::png($qrCodeUrl, false, QR_ECLEVEL_L, 4);
+        $imgData = ob_get_contents();
+        ob_end_clean();
+
+        header('Content-Type: text/html; charset=utf-8');
+
+        $qrImage = 'data:image/png;base64,' . base64_encode($imgData);
+        require __DIR__ . '/../../templates/setup_2fa.php';
     }
 
     public function logout() {
@@ -140,7 +194,8 @@ class AuthController {
             $user->setAddress($_POST['address']);
             $user->setPhoneNumber($_POST['phone']);
             $user->setEmail($_POST['email']);
-
+            $user->setTotpEnabled(isset($_POST['totp_enabled']) ? 1 : 0);
+            
             if ($manager->updateProfile($user)) {
                 $message = "Profil mis à jour avec succès.";
             }
@@ -210,3 +265,8 @@ class AuthController {
         require __DIR__ . '/../../templates/reset_password.php';
     }
 }
+
+
+
+
+?>
