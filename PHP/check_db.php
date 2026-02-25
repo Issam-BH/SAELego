@@ -2,7 +2,7 @@
 require_once 'config/database.php';
 try {
     $db = Database::getInstance();
-    echo "З'єднання з базою успішне!";
+    echo "Conenction acces";
 } catch (Exception $e) {
-    echo "Помилка: " . $e->getMessage();
+    echo "Connection error: " . $e->getMessage();
 }
