@@ -1,3 +1,11 @@
+# Dossiers de données et binaires
 mysql_data/
 PHP/bin/pavage
+
+# Fichiers système
 .DS_Store
+Thumbs.db
+
+# Dépendances Node.js
+node_modules/
+jeux/jeu1/backend/node_modules/
