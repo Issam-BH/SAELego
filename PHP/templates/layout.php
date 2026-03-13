@@ -197,6 +197,23 @@
 <footer>
     <div class="container text-center">
         <p class="mb-0">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
+        <a href="http://localhost:3000/" style="
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #9C27B0;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Fredoka', sans-serif;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1.5px solid rgba(156,39,176,0.3);
+            margin-top: 10px;
+            transition: all 0.2s;
+        ">
+            Jouer en Lego
+        </a>
     </div>
 </footer>
 

@@ -18,4 +18,12 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf
 RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Повністю вимикаємо оптимізацію та кешування файлів у Apache
+RUN echo "EnableSendfile Off" >> /etc/apache2/apache2.conf
+RUN echo "EnableMMAP Off" >> /etc/apache2/apache2.conf
+
+# Налаштовуємо PHP для розробки (вимикаємо OPcache)
+RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini && \
+    echo "opcache.enable=0" >> /usr/local/etc/php/php.ini
+
 WORKDIR /var/www/html

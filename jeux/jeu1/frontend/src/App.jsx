@@ -66,10 +66,27 @@ export default function App() {
 
     if (gameState === 'menu') {
         return (
-            <div className="container">
+            <div className="container" 
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
                 <h1>Fidélité Lego</h1>
                 <p>Votre ID : {fidelityId}</p>
-                <button className="btn" onClick={joinGame}>Lancer le Jeu 1 (Reproduction)</button>
+                <button className="btn" onClick={joinGame} style={{margin:'20px'}}>Lancer le Jeu 1 (Reproduction)</button>
+                <a href="http://localhost/PHP/SAELego/PHP/public/index.php?page=home" 
+                style={{
+                    display: 'inline-block',
+                    padding: '10px 20px',
+                    backgroundColor: '#0d6efd',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '5px',
+                    margin: '20px'
+                }}
+                >
+                Retour sur la site
+                </a>
             </div>
         );
     }
@@ -86,6 +103,19 @@ export default function App() {
 
     return (
         <div className="container">
+            <a href="http://localhost/PHP/SAELego/PHP/public/index.php?page=home" 
+                style={{
+                    display: 'inline-block',
+                    padding: '10px 20px',
+                    backgroundColor: '#0d6efd',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '5px',
+                    marginBottom: '20px'
+                }}
+                >
+                Retour sur la site
+                </a>
             <header className="game-header">
                 <div>Score : {score}</div>
                 {currentBrick && <div className="timer">Temps restant : {timeLeft}s</div>}

@@ -9,3 +9,7 @@ Thumbs.db
 # Dépendances Node.js
 node_modules/
 jeux/jeu1/backend/node_modules/
+
+
+Dockerfile
+.yml
