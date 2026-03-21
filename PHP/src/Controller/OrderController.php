@@ -6,17 +6,24 @@ class OrderController {
 
     public function form() {
         if (!UserSession::isAuthenticated()) {
+            $_SESSION['redirect_after_login'] = 'index.php?page=order';
+            $_SESSION['pending_order_data'] = $_POST;
             header('Location: index.php?page=login');
             exit;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_upload'])) {
-            $uploadId = $_POST['id_upload'];
+        $orderData = $_SESSION['pending_order_data'] ?? $_POST;
+        unset($_SESSION['pending_order_data']);
+
+        if (isset($orderData['id_upload'])) {
+            $uploadId = $orderData['id_upload'];
+            $brickData = $orderData['brick_data'] ?? '[]';
             
-            $brickData = $_POST['brick_data'] ?? '[]';
-            $price = $_POST['price'] ?? 0;
-            $size = $_POST['size'] ?? 64;
-            $filter = 'generated_c'; 
+            $price = $orderData['total_price'] ?? $orderData['price'] ?? 0;
+            
+            $size = $orderData['size_option'] ?? $orderData['size'] ?? 64;
+            
+            $filter = $orderData['filter_css'] ?? 'standard';
 
             $pdo = Database::getInstance();
             $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
@@ -30,73 +37,46 @@ class OrderController {
     }
 
     public function process() {
-        if (!UserSession::isAuthenticated()) header('Location: index.php?page=login');
+        if (!UserSession::isAuthenticated()) {
+            header('Location: index.php?page=login');
+            exit;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo = Database::getInstance();
             $userId = UserSession::getUserId();
-            
-            $stmtUser = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
-            $stmtUser->execute([$userId]);
-            $user = $stmtUser->fetch();
 
-            $sqlAddr = "INSERT INTO address (user_id, line1, city, postal_code, country, is_default) 
-                        VALUES (:uid, :line1, :city, :cp, :country, 1)";
+            $sqlAddr = "INSERT INTO address (user_id, line1, city, postal_code, country, is_default) VALUES (:uid, :line1, :city, :cp, :country, 1)";
             $stmt = $pdo->prepare($sqlAddr);
             $stmt->execute([
-                ':uid' => $userId,
-                ':line1' => $_POST['address'],
-                ':city' => $_POST['city'],
-                ':cp' => $_POST['zip'],
+                ':uid' => $userId, 
+                ':line1' => $_POST['address'], 
+                ':city' => $_POST['city'], 
+                ':cp' => $_POST['zip'], 
                 ':country' => $_POST['country'] ?? 'FR'
             ]);
             $addressId = $pdo->lastInsertId();
 
-            $sqlMosaic = "INSERT INTO mosaic (uploads_id, filter_used, size_option, estimated_price, brick_data, created_at) 
-                          VALUES (:uid, :filter, :size, :price, :data, NOW())";
+            $sqlMosaic = "INSERT INTO mosaic (uploads_id, filter_used, size_option, estimated_price, brick_data, created_at) VALUES (:uid, :filter, :size, :price, :data, NOW())";
             $stmt = $pdo->prepare($sqlMosaic);
             $stmt->execute([
-                ':uid'    => $_POST['upload_id'],
-                ':filter' => $_POST['filter_css'] ?? 'c_algo',
-                ':size'   => $_POST['size_option'],
-                ':price'  => $_POST['total_price'],
-                ':data'   => $_POST['brick_data'] ?? null
+                ':uid' => $_POST['upload_id'] ?? $_POST['id_upload'], 
+                ':filter' => $_POST['filter_css'] ?? 'standard', 
+                ':size' => $_POST['size_option'] ?? 64, 
+                ':price' => $_POST['total_price'], 
+                ':data' => $_POST['brick_data'] ?? null
             ]);
             $mosaicId = $pdo->lastInsertId();
 
             $orderRef = 'CMD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-            $sqlOrder = "INSERT INTO orders (user_id, mosaic_id, shipping_address_id, order_number, status, total_amount, payment_method, created_at) 
-                         VALUES (:uid, :mid, :aid, :ref, 'paid', :total, 'card', NOW())";
+            $sqlOrder = "INSERT INTO orders (user_id, mosaic_id, shipping_address_id, order_number, status, total_amount, payment_method, created_at) VALUES (:uid, :mid, :aid, :ref, 'paid', :total, 'card', NOW())";
             $stmt = $pdo->prepare($sqlOrder);
             $stmt->execute([
-                ':uid' => $userId,
-                ':mid' => $mosaicId,
-                ':aid' => $addressId,
-                ':ref' => $orderRef,
+                ':uid' => $userId, 
+                ':mid' => $mosaicId, 
+                ':aid' => $addressId, 
+                ':ref' => $orderRef, 
                 ':total' => $_POST['total_price']
-            ]);
-            $orderId = $pdo->lastInsertId();
-
-            $invoiceData = [
-                'client' => ['firstname' => $user['firstname'], 'lastname' => $user['lastname'], 'email' => $user['email']],
-                'shipping_address' => ['line1' => $_POST['address'], 'city' => $_POST['city'], 'zip' => $_POST['zip'], 'country' => $_POST['country'] ?? 'FR'],
-                'items' => [[
-                    'description' => "Mosaïque LEGO® (" . $_POST['size_option'] . "x" . $_POST['size_option'] . ")",
-                    'quantity' => 1,
-                    'unit_price' => $_POST['total_price'],
-                    'total' => $_POST['total_price']
-                ]],
-                'payment' => ['method' => 'Carte Bancaire', 'date' => date('Y-m-d H:i:s'), 'total' => $_POST['total_price'] . ' €']
-            ];
-            $invoiceRef = 'FACT-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-            
-            $sqlInvoice = "INSERT INTO invoices (order_id, invoice_number, content_json, created_at) 
-                           VALUES (:oid, :ref, :json, NOW())";
-            $stmt = $pdo->prepare($sqlInvoice);
-            $stmt->execute([
-                ':oid' => $orderId,
-                ':ref' => $invoiceRef,
-                ':json' => json_encode($invoiceData)
             ]);
 
             header("Location: index.php?page=confirmation&ref=" . $orderRef);
@@ -106,26 +86,18 @@ class OrderController {
 
     public function confirmation() {
         if (!isset($_GET['ref'])) header('Location: index.php');
-        $ref = $_GET['ref'];
         $pdo = Database::getInstance();
-        $sql = "SELECT * FROM orders WHERE order_number = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$ref]);
+        $stmt = $pdo->prepare("SELECT * FROM orders WHERE order_number = ?");
+        $stmt->execute([$_GET['ref']]);
         $order = $stmt->fetch();
         require __DIR__ . '/../../templates/confirmation.php';
     }
 
     public function history() {
         if (!UserSession::isAuthenticated()) { header('Location: index.php?page=login'); exit; }
-        $userId = UserSession::getUserId();
         $pdo = Database::getInstance();
-        $sql = "SELECT o.*, m.size_option, m.filter_used, u.id_upload 
-                FROM orders o
-                JOIN mosaic m ON o.mosaic_id = m.id
-                JOIN uploads u ON m.uploads_id = u.id_upload
-                WHERE o.user_id = ? ORDER BY o.created_at DESC";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$userId]);
+        $stmt = $pdo->prepare("SELECT o.*, m.size_option FROM orders o JOIN mosaic m ON o.mosaic_id = m.id WHERE o.user_id = ? ORDER BY o.created_at DESC");
+        $stmt->execute([UserSession::getUserId()]);
         $orders = $stmt->fetchAll();
         require __DIR__ . '/../../templates/history.php';
     }

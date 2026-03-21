@@ -5,10 +5,11 @@ class MosaicService {
 
     public function __construct() {
         $this->binPath = __DIR__ . '/../../bin/pavage'; 
+        // Sous Windows, ajoutez .exe si nécessaire : $this->binPath = __DIR__ . '/../../bin/pavage.exe';
         $this->bricksPath = __DIR__ . '/../../bin/briques.txt';
     }
 
-    public function generateMosaic($sourceImagePath) {
+    public function generateMosaic($sourceImagePath, $size = 64) {
         $tmpDir = sys_get_temp_dir() . '/lego_' . uniqid();
         if (!mkdir($tmpDir)) {
             throw new Exception("Impossible de créer le dossier temporaire");
@@ -16,8 +17,10 @@ class MosaicService {
 
         try {
             copy($this->bricksPath, $tmpDir . '/briques.txt');
-            $this->convertImageToTxt($sourceImagePath, $tmpDir . '/image.txt');
+            // On passe la taille choisie
+            $this->convertImageToTxt($sourceImagePath, $tmpDir . '/image.txt', (int)$size);
 
+            // Exécution du programme C
             $command = escapeshellcmd($this->binPath) . " " . escapeshellarg($tmpDir);
             shell_exec($command);
 
@@ -34,7 +37,7 @@ class MosaicService {
                 $filePath = $tmpDir . '/' . $config['file'];
                 if (file_exists($filePath)) {
                     $parsed = $this->parseResultFile($filePath);
-                    if ($parsed) {
+                    if ($parsed && !empty($parsed['bricks'])) {
                         $results[$key] = [
                             'label'  => $config['label'],
                             'data'   => $parsed['bricks'],
@@ -49,15 +52,20 @@ class MosaicService {
             return $results;
 
         } finally {
+            // Nettoyage optionnel du dossier temporaire (décommentez pour la prod)
+            // array_map('unlink', glob("$tmpDir/*.*"));
+            // rmdir($tmpDir);
         }
     }
 
-    private function convertImageToTxt($imgParams, $destPath) {
-        $size = 64; 
-        $ext = strtolower(pathinfo($imgParams, PATHINFO_EXTENSION));
-        if ($ext === 'jpg' || $ext === 'jpeg') $img = imagecreatefromjpeg($imgParams);
-        elseif ($ext === 'png') $img = imagecreatefrompng($imgParams);
-        else throw new Exception("Format non supporté");
+    private function convertImageToTxt($imgParams, $destPath, $size) {
+        // CORRECTION DU BUG "Not a JPEG" : on lit le contenu et on laisse PHP deviner le format
+        $data = file_get_contents($imgParams);
+        $img = imagecreatefromstring($data);
+        
+        if (!$img) {
+            throw new Exception("Format d'image non supporté ou fichier corrompu.");
+        }
         
         $smallImg = imagecreatetruecolor($size, $size);
         imagecopyresampled($smallImg, $img, 0, 0, 0, 0, $size, $size, imagesx($img), imagesy($img));
@@ -80,7 +88,7 @@ class MosaicService {
     }
 
     private function parseResultFile($path) {
-        $lines = file($path);
+        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if (empty($lines)) return null;
 
         $header = array_shift($lines); 
@@ -112,4 +120,3 @@ class MosaicService {
         ];
     }
 }
-?>

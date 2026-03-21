@@ -6,7 +6,7 @@
             <div class="card bg-dark border-0 rounded-4 overflow-hidden h-100 shadow-sm position-relative">
                 <div class="d-flex align-items-center justify-content-center h-100 p-4" style="min-height: 400px; background: #222;">
                     <img id="image-preview" 
-                         src="image.php?id=<?= $image['id_upload'] ?>" 
+                         src="image.php?id=<?= htmlspecialchars($image['id_upload']) ?>" 
                          style="max-width: 100%; max-height: 550px; display: block; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
                 </div>
             </div>
@@ -33,7 +33,7 @@
 
                     <form action="index.php?page=results" method="POST" id="form-generate" class="mt-auto">
                         
-                        <input type="hidden" name="id_upload" id="input-upload-id" value="<?= $image['id_upload'] ?>">
+                        <input type="hidden" name="id_upload" id="input-upload-id" value="<?= htmlspecialchars($image['id_upload']) ?>">
 
                         <div class="mb-4">
                             <label class="form-label fw-bold text-uppercase small text-muted">Taille de la mosaïque</label>
@@ -57,6 +57,8 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 <script>
     let cropper;
     const image = document.getElementById('image-preview');
@@ -93,27 +95,19 @@
         .then(r => r.json())
         .then(d => {
             if (d.success) {
-                // MISE A JOUR DE L'ID POUR LE FORMULAIRE
-                inputId.value = d.new_id;
-                
-                cropper.destroy(); 
-                cropper = null;
-                image.src = base64Image;
-                
-                btnSave.style.display = 'none';
-                msgBox.style.display = 'block';
-                msgBox.textContent = 'Image recadrée avec succès !';
+                // REDIRECTION VERS LA NOUVELLE IMAGE (corrige le bug d'affichage)
+                window.location.href = 'index.php?page=preview&id_upload=' + d.new_id;
             } else {
-                alert("Erreur lors du recadrage : " + (d.error || 'Inconnue'));
+                alert("Erreur lors du recadrage.");
+                btnSave.disabled = false; 
+                btnSave.innerHTML = '<i class="bi bi-check-lg me-2"></i> Valider le recadrage';
             }
         })
         .catch(e => {
             console.error(e);
             alert("Erreur réseau.");
-        })
-        .finally(() => { 
             btnSave.disabled = false; 
-            btnSave.innerHTML = '<i class="bi bi-check-lg me-2"></i> Valider le recadrage'; 
+            btnSave.innerHTML = '<i class="bi bi-check-lg me-2"></i> Valider le recadrage';
         });
     }
 </script>

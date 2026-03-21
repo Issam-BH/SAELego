@@ -6,38 +6,15 @@ require_once __DIR__ . '/../Service/UserSession.php';
 class MosaicController {
     
     public function upload() {
-        if (!UserSession::isAuthenticated()) {
-            header('Location: index.php?page=login');
-            exit;
-        }
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['userImage'])) {
             $file = $_FILES['userImage'];
-
             if ($file['error'] === UPLOAD_ERR_OK) {
-
-                $imageData = file_get_contents($file['tmp_name']);
-                $imageType = $file['type'];
-                $fileName  = $file['name'];
-                $userId    = UserSession::getUserId();
-
+                $userId = UserSession::getUserId();
                 $pdo = Database::getInstance();
-                $sql = "INSERT INTO uploads (user_id, filename, image_data, image_type, uploaded_at) 
-                    VALUES (:uid, :fname, :data, :type, NOW())";
-
+                $sql = "INSERT INTO uploads (user_id, filename, image_data, image_type, uploaded_at) VALUES (:uid, :fname, :data, :type, NOW())";
                 $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':uid'   => $userId,
-                    ':fname' => $fileName,
-                    ':data'  => $imageData,
-                    ':type'  => $imageType
-                ]);
-
-                $lastId = $pdo->lastInsertId();
-                $logManager = new LogManager();
-                $logManager->log('INFO', 'Upload image BLOB successful');
-
-                header("Location: index.php?page=preview&id_upload=$lastId");
+                $stmt->execute([':uid' => $userId, ':fname' => $file['name'], ':data' => file_get_contents($file['tmp_name']), ':type' => $file['type']]);
+                header("Location: index.php?page=preview&id_upload=" . $pdo->lastInsertId());
                 exit;
             }
         }
@@ -45,72 +22,48 @@ class MosaicController {
     }
 
     public function preview($id) {
-        if (!UserSession::isAuthenticated()) {
-            header('Location: index.php?page=login');
-            exit;
-        }
-
-        $uploadId = $id;
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare("SELECT * FROM uploads WHERE id_upload = ?");
-        
-        $stmt->execute([$uploadId]);
+        $stmt->execute([$id]);
         $image = $stmt->fetch();
-
-        if (!$image) {
-            die("Image introuvable en base de données.");
-        }
+        if (!$image) die("Image introuvable.");
         require __DIR__ . '/../../templates/preview.php';
     }
 
     public function crop() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
             $json = file_get_contents('php://input');
             $data = json_decode($json, true);
-
-            if (isset($data['image']) && isset($data['original_id'])) {
+            if (isset($data['image'])) {
                 $imageParts = explode(";base64,", $data['image']);
-                $imageType = explode("image/", $imageParts[0])[1];
+                $imageType = explode("image/", $imageParts[0])[1] ?? 'jpeg';
                 $imageBase64 = base64_decode($imageParts[1]);
 
                 $pdo = Database::getInstance();
-                $userId = UserSession::getUserId();
-
-                $sql = "INSERT INTO uploads (user_id, filename, image_data, image_type, uploaded_at) 
-                        VALUES (:uid, :fname, :data, :type, NOW())";
-                
+                $sql = "INSERT INTO uploads (user_id, filename, image_data, image_type, uploaded_at) VALUES (:uid, :fname, :data, :type, NOW())";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
-                    ':uid'   => $userId,
-                    ':fname' => 'cropped_' . uniqid() . '.' . $imageType,
-                    ':data'  => $imageBase64,
-                    ':type'  => 'image/' . $imageType
+                    ':uid' => UserSession::getUserId(), 
+                    ':fname' => 'cropped_'.uniqid().'.'.$imageType, 
+                    ':data' => $imageBase64, 
+                    ':type' => 'image/'.$imageType
                 ]);
 
-                $newId = $pdo->lastInsertId();
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'new_id' => $newId]);
+                echo json_encode(['success' => true, 'new_id' => $pdo->lastInsertId()]);
                 exit;
             }
         }
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid data']);
+        echo json_encode(['success' => false]);
         exit;
     }
 
     public function results() {
-        if (!UserSession::isAuthenticated()) {
-            header('Location: index.php?page=login');
-            exit;
-        }
-
-        $mosaics = []; 
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_upload'])) {
             $uploadId = $_POST['id_upload'];
+            $sizeOption = $_POST['size_option'] ?? 64;
+            
             $pdo = Database::getInstance();
-
             $stmt = $pdo->prepare("SELECT image_data FROM uploads WHERE id_upload = ?");
             $stmt->execute([$uploadId]);
             $data = $stmt->fetchColumn();
@@ -121,25 +74,18 @@ class MosaicController {
 
                 $service = new MosaicService();
                 try {
-                    $mosaics = $service->generateMosaic($tmpInputImg);
+                    $mosaicsAlgorithms = $service->generateMosaic($tmpInputImg, $sizeOption);
                     require __DIR__ . '/../../templates/results.php';
-                    
                 } catch (Exception $e) {
-                    $logManager = new LogManager();
-                    $logManager->log('ERROR', "Erreur génération mosaïque : " . $e->getMessage());
-                    die("Une erreur est survenue lors de la génération de la mosaïque. Veuillez réessayer.");
+                    die("Erreur de génération : " . htmlspecialchars($e->getMessage()));
                 } finally {
-                    if (file_exists($tmpInputImg)) {
-                        @unlink($tmpInputImg);
-                    }
+                    if (file_exists($tmpInputImg)) @unlink($tmpInputImg);
                 }
             } else {
                 header('Location: index.php?page=home');
-                exit;
             }
         } else {
             header('Location: index.php?page=home');
-            exit;
         }
     }
 
@@ -149,60 +95,40 @@ class MosaicController {
             exit;
         }
 
+        $orderId = $_POST['order_id'] ?? null;
         $type = $_POST['type'] ?? '';
-        $json = $_POST['brick_data'] ?? '[]';
-        $bricks = json_decode($json, true);
 
-        if (empty($bricks)) {
-            die("Aucune donnée de mosaïque à télécharger.");
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare("SELECT m.brick_data, m.size_option FROM orders o JOIN mosaic m ON o.mosaic_id = m.id WHERE o.id = ? AND o.user_id = ? AND o.status = 'paid'");
+        $stmt->execute([$orderId, UserSession::getUserId()]);
+        $result = $stmt->fetch();
+
+        if (!$result || empty($result['brick_data'])) {
+            die("Accès refusé : Vous devez acheter cette mosaïque pour en télécharger les plans.");
         }
 
+        $bricks = json_decode($result['brick_data'], true);
+        $size = $result['size_option'] ?? 64;
+
         if ($type === 'csv') {
-            header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="liste_pieces_lego.csv"');
-
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="inventaire_lego.csv"');
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Dimension (LxH)', 'Couleur (Hex)', 'Quantité']);
-
-            $stats = [];
-            foreach ($bricks as $b) {
-                $key = $b['w'] . 'x' . $b['h'] . '_' . $b['color'];
-                
-                if (!isset($stats[$key])) {
-                    $stats[$key] = [
-                        'dim' => $b['w'] . ' x ' . $b['h'],
-                        'col' => $b['color'],
-                        'qty' => 0
-                    ];
-                }
-                $stats[$key]['qty']++;
-            }
-
-            foreach ($stats as $row) {
-                fputcsv($out, [$row['dim'], $row['col'], $row['qty']]);
-            }
+            fputcsv($out, ['Dimension', 'Couleur', 'X', 'Y', 'Rotation']);
+            foreach ($bricks as $b) fputcsv($out, [$b['w'].'x'.$b['h'], $b['color'], $b['x'], $b['y'], $b['rot']]);
             fclose($out);
             exit;
-
         } elseif ($type === 'svg') {
             header('Content-Type: image/svg+xml');
-            header('Content-Disposition: attachment; filename="mosaique_finale.svg"');
-
-            echo '<?xml version="1.0" encoding="UTF-8"?>';
-            echo '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="1024" height="1024">';
-            
+            header('Content-Disposition: attachment; filename="plan_montage.svg"');
+            echo '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '.$size.' '.$size.'">';
             foreach ($bricks as $b) {
-                $width = ($b['rot'] % 2 == 0) ? $b['w'] : $b['h'];
-                $height = ($b['rot'] % 2 == 0) ? $b['h'] : $b['w'];
-                
-                echo sprintf(
-                    '<rect x="%s" y="%s" width="%s" height="%s" fill="%s" stroke="#000" stroke-width="0.05"/>',
-                    $b['x'], $b['y'], $width, $height, $b['color']
-                );
+                $w = ($b['rot'] % 2 == 0) ? $b['w'] : $b['h'];
+                $h = ($b['rot'] % 2 == 0) ? $b['h'] : $b['w'];
+                echo sprintf('<rect x="%s" y="%s" width="%s" height="%s" fill="%s" stroke="#000" stroke-width="0.05"/>', $b['x'], $b['y'], $w, $h, $b['color']);
             }
             echo '</svg>';
             exit;
         }
     }
 }
-?>

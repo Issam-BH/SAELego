@@ -9,13 +9,11 @@ require_once __DIR__ . '/../src/Service/EmailService.php';
 require_once __DIR__ . '/../src/Controller/AuthController.php';
 require_once __DIR__ . '/../src/Controller/MosaicController.php';
 
-// Initialiser la langue
 LanguageService::initialize();
 
 $page = $_GET['page'] ?? 'home';
 
 switch ($page) {
-
     case 'home':
         $controller = new MosaicController();
         $controller->upload();
@@ -115,8 +113,3 @@ switch ($page) {
         echo "</div>";
         break;
 }
-
-
-?>
-
-
