@@ -15,6 +15,7 @@ $page = $_GET['page'] ?? 'home';
 
 switch ($page) {
     case 'home':
+    case 'upload':
         $controller = new MosaicController();
         $controller->upload();
         break;
