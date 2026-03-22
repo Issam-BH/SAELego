@@ -1,65 +1,79 @@
 <?php ob_start(); ?>
-<div class="container">
-    <h2 class="mb-4 text-center">Finaliser votre commande</h2>
-    
-    <div class="row g-5">
-        <div class="col-lg-7">
-            <div class="card p-4">
-                <h4 class="mb-3 text-primary">Livraison</h4>
-                <form action="index.php?page=order_process" method="POST">
-                    <input type="hidden" name="upload_id" value="<?= $uploadId ?>">
-                    <input type="hidden" name="total_price" value="<?= $price ?>">
-                    <input type="hidden" name="size_option" value="<?= $size ?>">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 p-5">
+                <h2 class="mb-4 fw-bold text-center">Finaliser votre commande</h2>
+                
+                <form action="index.php?page=order_process" method="POST" id="order-form">
+                    <input type="hidden" name="upload_id" value="<?= htmlspecialchars($uploadId) ?>">
                     <input type="hidden" name="filter_css" value="<?= htmlspecialchars($filter) ?>">
-                    <input type="hidden" name="brick_data" value="<?= htmlspecialchars($brickData) ?>">
-
+                    <input type="hidden" name="size_option" value="<?= htmlspecialchars($size) ?>">
+                    <input type="hidden" name="total_price" id="base_price" value="<?= htmlspecialchars($price) ?>">
+                    <input type="hidden" name="brick_data" value='<?= htmlspecialchars($brickData, ENT_QUOTES, 'UTF-8') ?>'>
+                    
+                    <h4 class="mb-3 text-primary"><i class="bi bi-geo-alt-fill me-2"></i>Adresse de livraison</h4>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Adresse complète</label>
-                        <input type="text" name="address" class="form-control" required placeholder="ex: 12 Rue des Fleurs" value="<?= htmlspecialchars($user['address'] ?? '') ?>">
+                        <input type="text" class="form-control form-control-lg bg-light" name="address" placeholder="Adresse complète" required>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Ville</label>
-                            <input type="text" name="city" class="form-control" required>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <input type="text" class="form-control form-control-lg bg-light" name="city" placeholder="Ville" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold small">Code Postal</label>
-                            <input type="text" name="zip" class="form-control" required>
+                            <input type="text" class="form-control form-control-lg bg-light" name="zip" placeholder="Code Postal" required>
                         </div>
                     </div>
 
-                    <h4 class="mt-5 mb-3 text-primary">Paiement</h4>
-                    <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis rounded-3">
-                        <i class="bi bi-credit-card me-2"></i> Simulation de paiement sécurisé (Stripe/PayPal)
+                    <h4 class="mb-3 text-primary"><i class="bi bi-tag-fill me-2"></i>Code Promo (Fidélité)</h4>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control form-control-lg bg-light" name="coupon_code" id="coupon_code" placeholder="Ex: LEGO10 ou LEGO20">
+                        <button class="btn btn-outline-secondary px-4 fw-bold" type="button" onclick="applyCoupon()">Appliquer</button>
+                    </div>
+                    <div id="coupon-message" class="small fw-bold mb-4 ms-1"></div>
+
+                    <h4 class="mb-3 text-primary"><i class="bi bi-credit-card-fill me-2"></i>Paiement</h4>
+                    <div class="bg-light p-3 rounded-3 mb-2 border">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" value="card" id="pay_card" checked>
+                            <label class="form-check-label fw-bold" for="pay_card">Carte Bancaire</label>
+                        </div>
+                    </div>
+                    <div class="bg-light p-3 rounded-3 mb-4 border border-primary">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" value="paypal" id="pay_paypal">
+                            <label class="form-check-label fw-bold text-primary" for="pay_paypal">
+                                <i class="bi bi-paypal me-1"></i> PayPal Sandbox (Simulation)
+                            </label>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100 btn-lg mt-4 py-3 shadow-sm">
-                        Payer <?= number_format($price, 2) ?> €
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow py-3" style="font-size: 1.2rem;">
+                        <i class="bi bi-lock-fill me-2"></i>Payer <span id="display_price"><?= number_format($price, 2) ?></span> €
                     </button>
                 </form>
             </div>
         </div>
-        
-        <div class="col-lg-5">
-            <div class="card bg-light border-0">
-                <div class="card-body p-4">
-                    <h5 class="card-title fw-bold mb-4">Récapitulatif</h5>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Kit Mosaïque (<?= $size ?>x<?= $size ?>)</span>
-                        <span class="fw-bold"><?= number_format($price, 2) ?> €</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 text-muted">
-                        <span>Livraison</span>
-                        <span>Gratuite</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="h5 mb-0">Total</span>
-                        <span class="h3 mb-0 text-primary fw-bold"><?= number_format($price, 2) ?> €</span>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
-<?php $content = ob_get_clean(); require __DIR__ . '/layout.php'; ?>
+
+<script>
+    function applyCoupon() {
+        const code = document.getElementById('coupon_code').value.trim().toUpperCase();
+        const basePrice = parseFloat(document.getElementById('base_price').value);
+        let finalPrice = basePrice;
+        let msg = document.getElementById('coupon-message');
+        
+        if (code === 'LEGO10') {
+            finalPrice = basePrice * 0.90;
+            msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Réduction de 10% appliquée !</span>';
+        } else if (code === 'LEGO20') {
+            finalPrice = basePrice * 0.80;
+            msg.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Réduction de 20% appliquée !</span>';
+        } else {
+            msg.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill"></i> Code promo invalide ou expiré.</span>';
+        }
+        document.getElementById('display_price').innerText = finalPrice.toFixed(2);
+    }
+</script>
+<?php $content = ob_get_clean(); require 'layout.php'; ?>

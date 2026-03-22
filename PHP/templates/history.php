@@ -28,7 +28,7 @@
                             <td class="ps-4 fw-bold font-monospace text-primary">#<?= htmlspecialchars($order['order_number']) ?></td>
                             <td class="text-muted"><?= date('d/m/Y', strtotime($order['created_at'])) ?></td>
                             <td>
-                                <img src="image.php?id=<?= $order['id_upload'] ?>"
+                                <img src="image.php?id=<?= htmlspecialchars($order['uploads_id']) ?>"
                                      alt="Mosaic"
                                      class="rounded-3 shadow-sm border"
                                      style="width: 48px; height: 48px; object-fit: cover; filter: <?= htmlspecialchars($order['filter_used']) ?>;">

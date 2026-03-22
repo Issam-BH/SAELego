@@ -32,13 +32,11 @@
             flex-direction: column;
         }
 
-        /* Titres en Fredoka (Rond et Fun) */
         h1, h2, h3, h4, h5, h6, .navbar-brand {
             font-family: 'Fredoka', sans-serif;
             font-weight: 600;
         }
 
-        /* Navbar avec Dégradé */
         .navbar-custom {
             background: var(--primary-gradient);
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -59,14 +57,12 @@
             color: #fff !important;
         }
 
-        /* Conteneur principal */
         .main-container {
             flex: 1;
             padding-top: 40px;
             padding-bottom: 40px;
         }
 
-        /* Cards style "Panel" */
         .card, .bg-white.rounded {
             border: none;
             border-radius: var(--card-radius);
@@ -79,7 +75,6 @@
             padding: 20px;
         }
 
-        /* Boutons personnalisés */
         .btn {
             border-radius: 8px;
             font-weight: 600;
@@ -90,7 +85,7 @@
         .btn-primary, .btn-success {
             background-color: var(--accent-green);
             border: none;
-            color: #222; /* Texte foncé pour contraste sur vert fluo */
+            color: #222; 
             box-shadow: 0 4px 6px rgba(51, 255, 119, 0.3);
         }
         
@@ -111,7 +106,6 @@
             border-color: #7B1FA2;
         }
 
-        /* Inputs plus ronds */
         .form-control, .form-select {
             border-radius: 10px;
             border: 2px solid #e0e0e0;
@@ -122,7 +116,6 @@
             box-shadow: 0 0 0 4px rgba(240, 98, 146, 0.1);
         }
 
-        /* Language Selector */
         .language-selector a {
             background: rgba(255,255,255,0.2);
             color: white;
@@ -179,6 +172,7 @@
                 <?php if (class_exists('UserSession') && UserSession::isAuthenticated()): ?>
                     <span class="nav-link me-2">👋 <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Member') ?></span>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('history') ?>"><?= Translator::get('my_orders') ?></a>
+                    <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('coupons') ?>">Coupons</a>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('profile') ?>"><?= Translator::get('my_profile') ?></a>
                     <a class="btn btn-sm btn-light text-primary ms-2 fw-bold" href="<?= LanguageService::getURLWithLanguage('logout') ?>" style="border-radius: 20px; padding: 5px 15px;"><?= Translator::get('logout') ?></a>
                 <?php else: ?>
@@ -197,23 +191,41 @@
 <footer>
     <div class="container text-center">
         <p class="mb-0">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
-        <a href="http://localhost:3000/" style="
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: #9C27B0;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            font-family: 'Fredoka', sans-serif;
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1.5px solid rgba(156,39,176,0.3);
-            margin-top: 10px;
-            transition: all 0.2s;
-        ">
-            Jouer en Lego
-        </a>
+        <div class="d-flex justify-content-center gap-3 mt-2">
+            <a href="http://localhost:3000/" style="
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                color: #9C27B0;
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: 600;
+                font-family: 'Fredoka', sans-serif;
+                padding: 6px 14px;
+                border-radius: 20px;
+                border: 1.5px solid rgba(156,39,176,0.3);
+                transition: all 0.2s;
+            ">
+                Jouer en Lego
+            </a>
+            
+            <a href="https://github.com/Issam-BH/SAELego" target="_blank" rel="noopener noreferrer" style="
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                color: #333;
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: 600;
+                font-family: 'Fredoka', sans-serif;
+                padding: 6px 14px;
+                border-radius: 20px;
+                border: 1.5px solid rgba(51,51,51,0.3);
+                transition: all 0.2s;
+            ">
+                <i class="bi bi-github"></i> GitHub
+            </a>
+        </div>
     </div>
 </footer>
 

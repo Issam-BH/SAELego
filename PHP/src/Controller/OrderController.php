@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../Service/UserSession.php';
+require_once __DIR__ . '/../Service/EmailService.php';
 require_once __DIR__ . '/../../config/database.php';
 
 class OrderController {
@@ -18,11 +19,8 @@ class OrderController {
         if (isset($orderData['id_upload'])) {
             $uploadId = $orderData['id_upload'];
             $brickData = $orderData['brick_data'] ?? '[]';
-            
             $price = $orderData['total_price'] ?? $orderData['price'] ?? 0;
-            
             $size = $orderData['size_option'] ?? $orderData['size'] ?? 64;
-            
             $filter = $orderData['filter_css'] ?? 'standard';
 
             $pdo = Database::getInstance();
@@ -46,6 +44,16 @@ class OrderController {
             $pdo = Database::getInstance();
             $userId = UserSession::getUserId();
 
+            $basePrice = (float) $_POST['total_price'];
+            $couponCode = strtoupper(trim($_POST['coupon_code'] ?? ''));
+            $discount = 0;
+
+            if ($couponCode === 'LEGO10') $discount = $basePrice * 0.10;
+            if ($couponCode === 'LEGO20') $discount = $basePrice * 0.20;
+            
+            $finalPrice = $basePrice - $discount;
+            $paymentMethod = $_POST['payment_method'] === 'paypal' ? 'paypal_sandbox' : 'card';
+
             $sqlAddr = "INSERT INTO address (user_id, line1, city, postal_code, country, is_default) VALUES (:uid, :line1, :city, :cp, :country, 1)";
             $stmt = $pdo->prepare($sqlAddr);
             $stmt->execute([
@@ -60,24 +68,41 @@ class OrderController {
             $sqlMosaic = "INSERT INTO mosaic (uploads_id, filter_used, size_option, estimated_price, brick_data, created_at) VALUES (:uid, :filter, :size, :price, :data, NOW())";
             $stmt = $pdo->prepare($sqlMosaic);
             $stmt->execute([
-                ':uid' => $_POST['upload_id'] ?? $_POST['id_upload'], 
+                ':uid' => $_POST['upload_id'], 
                 ':filter' => $_POST['filter_css'] ?? 'standard', 
                 ':size' => $_POST['size_option'] ?? 64, 
-                ':price' => $_POST['total_price'], 
+                ':price' => $finalPrice, 
                 ':data' => $_POST['brick_data'] ?? null
             ]);
             $mosaicId = $pdo->lastInsertId();
 
             $orderRef = 'CMD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-            $sqlOrder = "INSERT INTO orders (user_id, mosaic_id, shipping_address_id, order_number, status, total_amount, payment_method, created_at) VALUES (:uid, :mid, :aid, :ref, 'paid', :total, 'card', NOW())";
+            $sqlOrder = "INSERT INTO orders (user_id, mosaic_id, shipping_address_id, order_number, status, total_amount, payment_method, created_at) VALUES (:uid, :mid, :aid, :ref, 'paid', :total, :pay, NOW())";
             $stmt = $pdo->prepare($sqlOrder);
             $stmt->execute([
                 ':uid' => $userId, 
                 ':mid' => $mosaicId, 
                 ':aid' => $addressId, 
                 ':ref' => $orderRef, 
-                ':total' => $_POST['total_price']
+                ':total' => $finalPrice,
+                ':pay' => $paymentMethod
             ]);
+
+            $stmtUser = $pdo->prepare("SELECT email, nickname FROM users WHERE user_id = ?");
+            $stmtUser->execute([$userId]);
+            $user = $stmtUser->fetch();
+
+            $emailBody = "
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2>Merci pour votre achat {$user['nickname']} !</h2>
+                    <p>Votre commande <strong>$orderRef</strong> a été validée avec succès.</p>
+                    <p>Montant total payé : <strong>" . number_format($finalPrice, 2) . " €</strong>.</p>
+                    <p>Moyen de paiement : <strong>" . strtoupper($paymentMethod) . "</strong></p>
+                    <hr>
+                    <p>Vous pouvez dès à présent télécharger vos plans de construction et inventaires CSV depuis votre espace client.</p>
+                </div>
+            ";
+            EmailService::sendEmail($user['email'], "Confirmation de commande - $orderRef", $emailBody);
 
             header("Location: index.php?page=confirmation&ref=" . $orderRef);
             exit;
@@ -96,7 +121,12 @@ class OrderController {
     public function history() {
         if (!UserSession::isAuthenticated()) { header('Location: index.php?page=login'); exit; }
         $pdo = Database::getInstance();
-        $stmt = $pdo->prepare("SELECT o.*, m.size_option FROM orders o JOIN mosaic m ON o.mosaic_id = m.id WHERE o.user_id = ? ORDER BY o.created_at DESC");
+        $stmt = $pdo->prepare("SELECT o.*, m.size_option, m.filter_used, m.uploads_id 
+                               FROM orders o 
+                               JOIN mosaic m ON o.mosaic_id = m.id 
+                               WHERE o.user_id = ? 
+                               ORDER BY o.created_at DESC");
+        
         $stmt->execute([UserSession::getUserId()]);
         $orders = $stmt->fetchAll();
         require __DIR__ . '/../../templates/history.php';

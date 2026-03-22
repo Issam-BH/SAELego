@@ -1,10 +1,7 @@
 <?php
-// templates/home.php
 ob_start();
 ?>
 <style>
-    /* ... (Gardez tout votre style CSS existant ici, je ne le répète pas pour alléger) ... */
-    /* Import d'une police plus ronde et moderne */
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Poppins:wght@400;600&display=swap');
 
     :root {
@@ -26,7 +23,6 @@ ob_start();
         flex-direction: column;
     }
 
-    /* HEADER */
     header {
         background: var(--primary-gradient);
         padding: 15px 40px;
@@ -54,7 +50,7 @@ ob_start();
     .btn-header {
         text-decoration: none;
         padding: 8px 20px;
-        border-radius: 30px; /* Plus rond */
+        border-radius: 30px;
         font-weight: 600;
         font-size: 0.9rem;
         transition: transform 0.2s, box-shadow 0.2s;
@@ -67,7 +63,7 @@ ob_start();
     }
 
     .btn-register {
-        background-color: #33FF77; /* Vert fluo */
+        background-color: #33FF77; 
         color: #222;
         border: none;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -91,8 +87,6 @@ ob_start();
         margin-right: 10px;
         font-family: 'Fredoka', sans-serif;
     }
-
-    /* ... Le reste de votre CSS (main-wrapper, hero-panel, etc.) ... */
     
     .main-wrapper {
         flex: 1;
@@ -232,6 +226,43 @@ ob_start();
         .hero-panel { transform: rotate(0deg); width: 90%; }
         .upload-panel { width: 90%; }
     }
+
+    /* Style ajouté uniquement pour le footer */
+    footer {
+        background: white;
+        margin-top: auto;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.02);
+        padding: 30px 0;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #888;
+    }
+    .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    .footer-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        font-family: 'Fredoka', sans-serif;
+        padding: 6px 14px;
+        border-radius: 20px;
+        transition: all 0.2s;
+    }
+    .footer-btn.purple {
+        color: #9C27B0;
+        border: 1.5px solid rgba(156,39,176,0.3);
+    }
+    .footer-btn.dark {
+        color: #333;
+        border: 1.5px solid rgba(51,51,51,0.3);
+    }
 </style>
 
 <header>
@@ -242,11 +273,11 @@ ob_start();
             <span class="user-greeting">Salut, <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Fan de Lego') ?> !</span>
             
             <a href="index.php?page=history" class="btn-header btn-login">
-                <i class="bi bi-box-seam"></i> Mes Commandes
+                Mes Commandes
             </a>
             
             <a href="index.php?page=profile" class="btn-header btn-login">
-                <i class="bi bi-person-circle"></i> Compte
+                Compte
             </a>
             
             <a href="index.php?page=logout" class="btn-header btn-logout">
@@ -274,7 +305,7 @@ ob_start();
 
         <div class="upload-panel">
             <h2>Lachez votre image ici et laissez la magie opérer</h2>
-            <form action="index.php?page=home" method="POST" enctype="multipart/form-data">
+            <form action="index.php?page=upload" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <label for="userImage" class="file-label-btn">Parcourir</label>
                     <span class="file-name-display" id="fileName">image.png</span>
@@ -286,6 +317,14 @@ ob_start();
 
     </div>
 </div>
+
+<footer>
+    <p style="margin: 0;">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
+    <div class="footer-links">
+        <a href="http://localhost:3000/" class="footer-btn purple">Jouer en Lego</a>
+        <a href="https://github.com/Issam-BH/SAELego" target="_blank" class="footer-btn dark">GitHub</a>
+    </div>
+</footer>
 
 <script>
     function updateFileName() {

@@ -104,6 +104,11 @@ switch ($page) {
         $controller->download();
         break;
 
+    case 'coupons':
+        $controller = new AuthController();
+        $controller->coupons();
+        break;
+
     default:
         http_response_code(404);
         echo "<div style='text-align:center; margin-top:50px; font-family:sans-serif;'>";
