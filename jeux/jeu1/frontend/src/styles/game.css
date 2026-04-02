@@ -69,33 +69,38 @@ body {
 }
 
 .grid-wrapper {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px; /* Empêche la grille de devenir géante sur un grand écran */
+    aspect-ratio: 1 / 1; /* Magique : force la grille à rester un carré parfait */
+    margin: 0 auto;
     border: 2px solid #bdc3c7;
     background-color: #ecf0f1;
     padding: 5px;
     border-radius: 5px;
+    box-sizing: border-box;
 }
 
 .grid-wrapper.disabled {
     cursor: not-allowed;
     opacity: 0.9;
 }
-
 .row {
     display: flex;
+    flex: 1; /* Chaque ligne prend une part égale de la hauteur dispo */
 }
 
 .cell {
-    width: 60px;
-    height: 60px;
-    border: 1px solid rgba(0,0,0,0.1);
-    margin: 2px;
-    border-radius: 4px;
+    flex: 1; /* Chaque cellule prend une part égale de la largeur de la ligne */
+    margin: 1px; /* Marge toute petite pour que les 400 cases respirent */
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.2);
 }
 
 .cell:hover {
@@ -104,25 +109,27 @@ body {
 
 /* Le petit "tenon" (stud) sur la brique lego */
 .lego-stud {
-    width: 30px;
-    height: 30px;
+    width: 65%;
+    height: 65%;
     border-radius: 50%;
     background-color: inherit;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.2), inset 1px 1px 2px rgba(255,255,255,0.5);
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.3), inset 1px 1px 2px rgba(255,255,255,0.5);
     filter: brightness(1.1);
 }
 
-/* Responsive pour Mobile */
+/* --- RESPONSIVE POUR MOBILE --- */
 @media (max-width: 600px) {
-    .cell {
-        width: 40px;
-        height: 40px;
-    }
-    .lego-stud {
-        width: 20px;
-        height: 20px;
-    }
     .boards-container {
         flex-direction: column;
+        gap: 15px; /* Moins d'espace entre les éléments sur mobile */
+    }
+    
+    .grid-wrapper {
+        max-width: 100%; /* Prend toute la largeur de l'écran du téléphone */
+        padding: 2px; /* On réduit le padding pour gagner de la place */
+    }
+    
+    .cell {
+        margin: 0.5px; /* Marges minuscules sur mobile */
     }
 }

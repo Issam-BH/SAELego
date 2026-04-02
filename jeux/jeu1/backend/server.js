@@ -40,24 +40,28 @@ io.on('connection', (socket) => {
 
         let levelData;
         try {
+            // Appel au nouveau service 100% Node.js qui interroge MongoDB
             levelData = await PavageService.generateLevel();
         } catch (err) {
-            console.error("\n⚠️ Échec Java. Utilisation de la grille de secours multi-formes !");
+            // ON AFFICHE LA VRAIE ERREUR ICI POUR VOUS AIDER À DÉBOGUER
+            console.error("\n❌ Erreur de génération du niveau :", err.message);
+            console.log("⚠️ Utilisation de la grille de secours en attendant de régler l'erreur ci-dessus...");
             
-            // NOUVEAU MOCK AVEC DE GRANDES FORMES (Grille 4x4)
+            // Grille de secours au cas où la base de données est vide
             levelData = {
                 targetGrid: [
-                    [{color: 'red'}, {color: 'red'}, {color: 'blue'}, {color: 'blue'}],
-                    [{color: 'red'}, {color: 'red'}, {color: 'yellow'}, {color: 'yellow'}],
-                    [{color: 'green'}, {color: 'green'}, {color: 'white'}, null],
-                    [null, null, null, null]
+                    [{color: '#ff0000'}, {color: '#ff0000'}, {color: '#0000ff'}, {color: '#0000ff'}],
+                    [{color: '#ff0000'}, {color: '#ff0000'}, {color: '#ffff00'}, {color: '#ffff00'}],
+                    [{color: '#008000'}, {color: '#008000'}, {color: '#ffffff'}, {color: '#ffffff'}],
+                    [{color: '#000000'}, {color: '#000000'}, {color: '#000000'}, {color: '#000000'}]
                 ],
                 bricksQueue: [
-                    {color: 'red', shape: '2x2'},    // Un carré 2x2
-                    {color: 'blue', shape: '2x1'},   // Un rectangle horizontal de 2 de large
-                    {color: 'yellow', shape: '2x1'}, // Un autre rectangle horizontal
-                    {color: 'green', shape: '2x1'},  // Un rectangle horizontal
-                    {color: 'white', shape: '1x1'}   // Un petit carré simple
+                    {color: '#ff0000', shape: '2x2'},
+                    {color: '#0000ff', shape: '2x1'},
+                    {color: '#ffff00', shape: '2x1'},
+                    {color: '#008000', shape: '2x1'},
+                    {color: '#ffffff', shape: '2x1'},
+                    {color: '#000000', shape: '4x1'}
                 ]
             };
         }
@@ -91,7 +95,7 @@ io.on('connection', (socket) => {
         
         if(!game) return;
 
-        // EXTRACTION DES DIMENSIONS DE LA BRIQUE (ex: "2x1" -> w=2, h=1)
+        // EXTRACTION DES DIMENSIONS DE LA BRIQUE
         const [wStr, hStr] = brick.shape.split('x');
         const brickWidth = parseInt(wStr, 10) || 1;
         const brickHeight = parseInt(hStr, 10) || 1;
@@ -99,13 +103,13 @@ io.on('connection', (socket) => {
         const gridHeight = game.grids[socket.id].length;
         const gridWidth = game.grids[socket.id][0].length;
 
-        // 1. Vérifier si la brique dépasse les bords du tableau
+        // 1. Vérifier si la brique dépasse les bords
         if (y + brickHeight > gridHeight || x + brickWidth > gridWidth) {
             console.log("Échec : La brique sort des limites du plateau !");
             return;
         }
 
-        // 2. Vérifier si toutes les cases requises sont bien vides
+        // 2. Vérifier si les cases sont vides
         for (let dy = 0; dy < brickHeight; dy++) {
             for (let dx = 0; dx < brickWidth; dx++) {
                 if (game.grids[socket.id][y + dy][x + dx] !== null) {
@@ -117,12 +121,12 @@ io.on('connection', (socket) => {
 
         console.log(`Succès : Brique ${brick.shape} placée en [${x}, ${y}]`);
         
-        // 3. Placer la brique sur toutes les cases qu'elle couvre et calculer le score
+        // 3. Placer la brique et calculer le score
         for (let dy = 0; dy < brickHeight; dy++) {
             for (let dx = 0; dx < brickWidth; dx++) {
                 game.grids[socket.id][y + dy][x + dx] = brick;
                 
-                // +10 points par "petit carré" correct recouvert
+                // +10 points par case correcte
                 const targetCell = game.targetGrid[y + dy][x + dx];
                 if (targetCell && targetCell.color === brick.color) {
                     game.scores[socket.id] += 10;
@@ -150,7 +154,9 @@ async function endGame(room) {
             await Player.updateOne({ fidelityId: fid }, { $inc: { loyaltyPoints: game.scores[socketId] } });
         }
         await new GameSession({ players: Object.values(game.playerIds), mode: game.mode, scores: game.scores }).save();
-    } catch (err) {}
+    } catch (err) {
+        console.error("Erreur lors de l'enregistrement de fin de partie :", err.message);
+    }
 
     delete activeGames[room];
 }
@@ -158,6 +164,8 @@ async function endGame(room) {
 function nextTurn(room) {
     const game = activeGames[room];
     if (!game) return;
+    
+    // Fin de partie s'il n'y a plus de briques
     if (game.currentTurn >= game.bricksQueue.length) return endGame(room);
 
     const currentBrick = game.bricksQueue[game.currentTurn];
@@ -173,4 +181,4 @@ function nextTurn(room) {
     game.currentTurn++;
 }
 
-server.listen(3001, () => console.log('Backend Node.js sur le port 3001'));
+server.listen(3001, () => console.log('✅ Backend Node.js démarré sur le port 3001'));
