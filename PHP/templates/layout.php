@@ -253,7 +253,16 @@
         </div>
     </div>
 </footer>
-
+<?php if (class_exists('UserSession') && UserSession::isAuthenticated()): ?>
+<script>
+    if (window.AndroidInterface) {
+        const appUserId = "<?= $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? '' ?>";
+        if (appUserId !== "") {
+            window.AndroidInterface.saveUserId(appUserId);
+        }
+    }
+</script>
+<?php endif; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
