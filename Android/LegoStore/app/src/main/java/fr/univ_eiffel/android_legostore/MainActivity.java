@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new WebAppInterface(this), "AndroidInterface");
 
         String userId = prefs.getString("user_id", "");
-        String url = "http://10.0.2.2/PHP/SAELego/PHP/public/index.php";
+        String url = "http://10.0.2.2/SAELego/PHP/public/index.php";
         if (!userId.isEmpty()) {
             url += "?app_user_id=" + userId;
         }

@@ -15,3 +15,5 @@ Dockerfile
 .yml
 jeux/jeu2/frontend/env
 jeux/jeu1/frontend/env
+.idea/modules.xml
+/.idea

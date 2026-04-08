@@ -36,7 +36,7 @@ public class PingWorker extends Worker {
         if (deviceId.isEmpty()) return Result.failure();
 
         try {
-            URL url = new URL("http://10.0.2.2/PHP/SAELego/PHP/public/api_app_ping.php");
+            URL url = new URL("http://10.0.2.2/SAELego/PHP/public/api_app_ping.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; utf-8");
