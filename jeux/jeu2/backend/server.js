@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 mongoose.connect('mongodb://127.0.0.1:27017/lego_fidelite').catch(() => {});
+
 async function sendPointsToPHP(userId, pointsEarned) {
     console.log(`\n--- [Try send points] ---`);
     console.log(`User ID: ${userId}`);
@@ -40,7 +41,6 @@ async function sendPointsToPHP(userId, pointsEarned) {
         console.error('❌ Error, conection with PHP:', error);
     }
 }
-
 
 const GameSessionSchema = new mongoose.Schema({
     players: [{ type: String, required: true }], 
@@ -79,23 +79,46 @@ function createEmptyGrid() { return Array(GRID_SIZE).fill(null).map(() => Array(
 function getRandomBrick() { return SHAPES[Math.floor(Math.random() * SHAPES.length)]; }
 
 function checkAndClearLines(grid) {
-    let linesToClearRows = [];
+    let rowsToClear = [];
+    let colsToClear = [];
     let points = 0;
+
     for (let y = 0; y < GRID_SIZE; y++) {
-        if (grid[y].every(cell => cell !== null)) linesToClearRows.push(y);
+        if (grid[y].every(cell => cell !== null)) rowsToClear.push(y);
     }
-    let clearedCount = linesToClearRows.length;
-    if (clearedCount > 0) {
-        linesToClearRows.forEach(y => {
-            for (let x = 0; x < GRID_SIZE; x++) {
-                let cellColor = grid[y][x];
-                if (COLOR_SCORES[cellColor]) points += COLOR_SCORES[cellColor];
-                grid[y][x] = null;
+
+    for (let x = 0; x < GRID_SIZE; x++) {
+        let colFull = true;
+        for (let y = 0; y < GRID_SIZE; y++) {
+            if (grid[y][x] === null) { colFull = false; break; }
+        }
+        if (colFull) colsToClear.push(x);
+    }
+
+    rowsToClear.forEach(y => {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            if (grid[y][x] && COLOR_SCORES[grid[y][x]]) points += COLOR_SCORES[grid[y][x]];
+        }
+    });
+
+    colsToClear.forEach(x => {
+        for (let y = 0; y < GRID_SIZE; y++) {
+            if (!rowsToClear.includes(y)) {
+                if (grid[y][x] && COLOR_SCORES[grid[y][x]]) points += COLOR_SCORES[grid[y][x]];
             }
-        });
-        points *= clearedCount;
-    }
-    return points;
+        }
+    });
+
+    rowsToClear.forEach(y => {
+        for (let x = 0; x < GRID_SIZE; x++) grid[y][x] = null;
+    });
+
+    colsToClear.forEach(x => {
+        for (let y = 0; y < GRID_SIZE; y++) grid[y][x] = null;
+    });
+
+    let totalCleared = rowsToClear.length + colsToClear.length;
+    return points * totalCleared;
 }
 
 function rotateMatrix(matrix) { return matrix[0].map((val, index) => matrix.map(row => row[index]).reverse()); }
@@ -174,8 +197,6 @@ async function endGame(code, forcedWinnerId = null) {
         if (pts > 0) {
             totalPointsAwarded += pts;
             await Player.updateOne({ fidelityId: w.fidelityId }, { $inc: { loyaltyPoints: pts } }, { upsert: true });
-            
-            // ОСЬ ЦЕЙ РЯДОК БУВ ПРОПУЩЕНИЙ: Відправляємо бали на PHP!
             sendPointsToPHP(w.fidelityId, pts);
         }
     }
@@ -199,6 +220,7 @@ async function endGame(code, forcedWinnerId = null) {
 
     if (room.timer) clearTimeout(room.timer);
 }
+
 function startTurn(code) {
     let room = activeRooms[code];
     if (!room || room.status !== 'playing') return;

@@ -4,7 +4,7 @@ import './App.css';
 
 const params = new URLSearchParams(window.location.search);
 const fidelityId = params.get('fidelityId') || 'guest_' + Math.floor(Math.random() * 10000);
-const socket = io('http://localhost:4002', { query: { fidelityId } });
+const socket = io('http://localhost:3002', { query: { fidelityId } });
 
 export default function App() {
     const [view, setView] = useState('menu');
@@ -30,7 +30,7 @@ export default function App() {
         socket.on('room_update', (data) => { setPlayersCount(data.players); });
         socket.on('receive_chat', (msg) => { setChatMessages(prev => [...prev, { fromMe: false, text: msg.text, sender: msg.senderPseudo }]); });
         socket.on('game_started', (data) => { setGameState(data.players); setGameMode(data.mode); setRoomCode(data.code); setView('playing'); });
-        socket.on('personal_game_over', () => { alert("Plus de place ! En attente de l'adversaire..."); });
+        socket.on('personal_game_over', () => { alert("Plus de place !"); });
         socket.on('invalid_move', (data) => { alert(data.message); setGameState(data.players); });
         socket.on('place_success', () => { setCurrentBrick(null); });
         socket.on('state_update', (data) => { setGameState(data.players); });
@@ -57,7 +57,7 @@ export default function App() {
     const createRoom = () => { if (!pseudo.trim()) return alert('Pseudo requis'); socket.emit('create_room', pseudo); };
     const joinRoom = () => { if (!pseudo.trim() || !inputCode) return alert('Champs requis'); socket.emit('join_room', { code: inputCode.toUpperCase(), pseudo }); };
     const startGame = () => socket.emit('start_game', roomCode);
-    const handleAbandon = () => { if (window.confirm("Abandonner la partie ?")) socket.emit('abandon_game', roomCode); };
+    const handleAbandon = () => { if (window.confirm("Abandonner ?")) socket.emit('abandon_game', roomCode); };
 
     const sendChat = (e) => {
         e.preventDefault();
@@ -125,64 +125,66 @@ export default function App() {
                     <h2>Partie Terminee</h2>
                     {winnerData && (
                         <div className="winner-announcement">
-                            {winnerData.isDraw ? (
-                                <p>EGALITE ! Points divises par 2.</p>
-                            ) : (
-                                <p>VAINQUEUR : <strong>{winnerData.winners[0]}</strong></p>
-                            )}
-                            {!winnerData.pointsAwarded ? (
-                                <p style={{color:'#ffcccc'}}>Score trop faible : aucun point de fidelite gagne.</p>
-                            ) : (
-                                <p>Points de fidelite mis a jour !</p>
-                            )}
+                            {winnerData.isDraw ? <p>EGALITE !</p> : <p>GAGNANT : {winnerData.winners.join(', ')}</p>}
+                            <p>{winnerData.hasStored ? "Points de fidelite mis a jour !" : "Score insuffisant pour des points."}</p>
                         </div>
                     )}
                     <button className="btn" onClick={() => window.location.reload()}>Menu</button>
                 </div>
             )}
 
-            <div className="layout">
-                <div className="player-area">
-                    <h3>{myData?.pseudo} {myData?.isGameOver ? '(BLOQUE)' : ''}</h3>
-                    <p>Score : {myData?.score}</p>
+            <div className="game-layout">
+                <div className="board-section">
+                    <h3 className={myData?.isGameOver ? 'finished' : ''}>{myData?.pseudo} : {myData?.score} pts</h3>
                     <div className="board">
                         {myData?.grid.map((row, y) => (
                             <div key={y} className="row">
-                                {row.map((cellColor, x) => (<div key={`${x}-${y}`} className="cell" style={{ backgroundColor: cellColor || '#e0e0e0' }} onClick={() => handleCellClick(x, y)} />))}
+                                {row.map((cellColor, x) => (
+                                    <div key={`${x}-${y}`} className="cell" style={{ backgroundColor: cellColor || '#e0e0e0' }} onClick={() => handleCellClick(x, y)} />
+                                ))}
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="center-area">
+                <div className="center-section">
                     <div className="sidebar">
-                        <h3>Suivant</h3>
+                        <h4>Brique</h4>
                         <div className="preview">
                             {currentBrick && currentBrick.matrix.map((row, r) => (
                                 <div key={r} className="row">
-                                    {row.map((isFilled, c) => (<div key={c} className="cell preview-cell" style={{ backgroundColor: isFilled ? currentBrick.color : 'transparent', border: isFilled ? '2px solid #333' : 'none' }} />))}
+                                    {row.map((val, c) => (
+                                        <div key={c} className="cell preview-cell" style={{ backgroundColor: val ? currentBrick.color : 'transparent', border: val ? '1px solid #333' : 'none' }} />
+                                    ))}
                                 </div>
                             ))}
                         </div>
-                        <button className="btn" onClick={rotateBrick} disabled={myData?.isGameOver || myData?.hasPlaced}>Pivoter</button>
-                        <button className="btn abandon-btn" onClick={handleAbandon} disabled={isGameOver}>Abandonner</button>
+                        <button className="btn mini" onClick={rotateBrick} disabled={myData?.isGameOver || myData?.hasPlaced}>Pivoter</button>
+                        <button className="btn mini abandon" onClick={handleAbandon}>Abandon</button>
                     </div>
+
                     {gameMode === 'duplicate' && (
-                        <div className="chat-box small-chat">
-                            <div className="messages">{chatMessages.map((m, i) => (<div key={i} className={`msg ${m.fromMe ? 'msg-me' : 'msg-opp'}`}><strong>{m.sender}:</strong> {m.text}</div>))}</div>
-                            <form onSubmit={sendChat} className="chat-form"><input value={chatInput} onChange={e => setChatInput(e.target.value)} /><button type="submit">OK</button></form>
+                        <div className="chat-small">
+                            <div className="messages small">
+                                {chatMessages.map((m, i) => (<div key={i} className="msg-line"><strong>{m.sender}:</strong> {m.text}</div>))}
+                            </div>
+                            <form onSubmit={sendChat} className="chat-mini-form">
+                                <input value={chatInput} onChange={e => setChatInput(e.target.value)} />
+                                <button type="submit">OK</button>
+                            </form>
                         </div>
                     )}
                 </div>
 
                 {gameMode === 'duplicate' && oppData && (
-                    <div className="player-area opponent-area">
-                        <h3>{oppData.pseudo} {oppData.isGameOver ? '(BLOQUE)' : ''}</h3>
-                        <p>Score : {oppData.score}</p>
-                        <div className="board mini-board">
+                    <div className="board-section">
+                        <h3 className={oppData.isGameOver ? 'finished' : ''}>{oppData.pseudo} : {oppData.score} pts</h3>
+                        <div className="board mini">
                             {oppData.grid.map((row, y) => (
                                 <div key={y} className="row">
-                                    {row.map((cellColor, x) => (<div key={`${x}-${y}`} className="cell" style={{ backgroundColor: cellColor || '#e0e0e0' }} />))}
+                                    {row.map((cellColor, x) => (
+                                        <div key={`${x}-${y}`} className="cell mini" style={{ backgroundColor: cellColor || '#e0e0e0' }} />
+                                    ))}
                                 </div>
                             ))}
                         </div>
