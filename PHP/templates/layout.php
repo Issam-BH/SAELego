@@ -219,7 +219,7 @@
                 }
             }
             ?>
-            <a href="<?= $game_url ?>" class="footer-btn purple" style="
+                <a href="index.php?page=games" class="footer-btn purple" style="
                     display: inline-flex;
                     align-items: center;
                     gap: 6px;
@@ -232,7 +232,7 @@
                     border-radius: 20px;
                     border: 1.5px solid rgba(156,39,176,0.3);
                     transition: all 0.2s;
-                ">Jouer en Lego</a>
+                "> Espace Jeux </a> 
             
             <a href="https://github.com/Issam-BH/SAELego" target="_blank" rel="noopener noreferrer" style="
                 display: inline-flex;

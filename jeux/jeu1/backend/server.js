@@ -227,4 +227,4 @@ function nextTurn(room) {
     game.currentTurn++;
 }
 
-server.listen(3001, () => console.log(' Backend Node.js démarré sur le port 3001'));
+server.listen(4001, () => console.log('✅ Backend Node.js démarré sur le port 4001'));

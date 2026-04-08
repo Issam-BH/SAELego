@@ -25,6 +25,11 @@ switch ($page) {
         $controller->login();
         break;
 
+     case 'games':
+        require '../templates/games.php';
+        break;
+
+
     case '2fa':
         $controller = new AuthController();
         $controller->verify2FA();

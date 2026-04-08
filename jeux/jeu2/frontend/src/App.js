@@ -4,7 +4,7 @@ import './App.css';
 
 const params = new URLSearchParams(window.location.search);
 const fidelityId = params.get('fidelityId') || 'guest_' + Math.floor(Math.random() * 10000);
-const socket = io('http://localhost:3002', { query: { fidelityId } });
+const socket = io('http://localhost:4002', { query: { fidelityId } });
 
 export default function App() {
     const [view, setView] = useState('menu');

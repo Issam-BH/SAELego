@@ -290,4 +290,4 @@ io.on('connection', (socket) => {
     });
     socket.on('disconnect', () => { for (let c in activeRooms) { if (activeRooms[c].players[socket.id]) { if (activeRooms[c].status === 'playing') endGame(c, Object.keys(activeRooms[c].players).find(id => id !== socket.id)); } } });
 });
-server.listen(3002, () => console.log('✅ Server game 2 have accesse 3002!'));
+server.listen(4002, () => console.log('✅ Server game 2 have accesse 4002!'));

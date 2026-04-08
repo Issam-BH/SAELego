@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import GameBoard from './components/GameBoard';
 
-const socket = io('http://localhost:3001');
+const socket = io('http://localhost:4001');
 
 // --- COMPOSANT CHAT SORTI DE APP ---
 const ChatBox = ({ chatMessages, chatInput, setChatInput, sendChatMessage, messagesEndRef, currentSocketId }) => (
