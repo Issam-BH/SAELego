@@ -5,6 +5,42 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 mongoose.connect('mongodb://127.0.0.1:27017/lego_fidelite').catch(() => {});
+async function sendPointsToPHP(userId, pointsEarned) {
+    console.log(`\n--- [Try send points] ---`);
+    console.log(`User ID: ${userId}`);
+    console.log(`Points: ${pointsEarned}`);
+
+    if (userId.startsWith('guest_')) {
+        console.log('❌ User are not login.');
+        return;
+    }
+    if (pointsEarned <= 0) {
+        console.log('❌ User have 0 points.');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost/PHP/SAELego/PHP/public/api_points.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                user_id: userId, 
+                add_points: pointsEarned 
+            })
+        });
+        
+        const textData = await response.text(); 
+        console.log(`Request from PHP server:`, textData);
+        
+        const data = JSON.parse(textData);
+        if (data.success) {
+            console.log(`✅ Good, new points: ${data.new_total}`);
+        }
+    } catch (error) {
+        console.error('❌ Error, conection with PHP:', error);
+    }
+}
+
 
 const GameSessionSchema = new mongoose.Schema({
     players: [{ type: String, required: true }], 
@@ -138,6 +174,9 @@ async function endGame(code, forcedWinnerId = null) {
         if (pts > 0) {
             totalPointsAwarded += pts;
             await Player.updateOne({ fidelityId: w.fidelityId }, { $inc: { loyaltyPoints: pts } }, { upsert: true });
+            
+            // ОСЬ ЦЕЙ РЯДОК БУВ ПРОПУЩЕНИЙ: Відправляємо бали на PHP!
+            sendPointsToPHP(w.fidelityId, pts);
         }
     }
 
@@ -160,7 +199,6 @@ async function endGame(code, forcedWinnerId = null) {
 
     if (room.timer) clearTimeout(room.timer);
 }
-
 function startTurn(code) {
     let room = activeRooms[code];
     if (!room || room.status !== 'playing') return;
@@ -252,4 +290,4 @@ io.on('connection', (socket) => {
     });
     socket.on('disconnect', () => { for (let c in activeRooms) { if (activeRooms[c].players[socket.id]) { if (activeRooms[c].status === 'playing') endGame(c, Object.keys(activeRooms[c].players).find(id => id !== socket.id)); } } });
 });
-server.listen(3002);
+server.listen(3002, () => console.log('✅ Server game 2 have accesse 3002!'));

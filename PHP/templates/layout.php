@@ -170,6 +170,19 @@
                 </div>
 
                 <?php if (class_exists('UserSession') && UserSession::isAuthenticated()): ?>
+                    <?php
+                    require_once __DIR__ . '/../config/database.php';
+                    $db_header = Database::getInstance();
+                    
+                    $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? 0;
+                    
+                    $stmt_pts = $db_header->prepare("SELECT points FROM users WHERE user_id = :id");
+                    $stmt_pts->execute(['id' => $session_id]);
+                    $current_points = $stmt_pts->fetchColumn() ?: 0;
+                    ?>
+                    <span style="background: #FFD700; color: #5a3d00; padding: 6px 15px; border-radius: 20px; font-weight: bold; margin-right: 15px; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        🪙 <?= $current_points ?> pts
+                    </span>
                     <span class="nav-link me-2">👋 <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Member') ?></span>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('history') ?>"><?= Translator::get('my_orders') ?></a>
                     <a class="nav-link" href="<?= LanguageService::getURLWithLanguage('coupons') ?>">Coupons</a>
@@ -192,22 +205,34 @@
     <div class="container text-center">
         <p class="mb-0">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
         <div class="d-flex justify-content-center gap-3 mt-2">
-            <a href="http://localhost:3000/" style="
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                color: #9C27B0;
-                text-decoration: none;
-                font-size: 0.85rem;
-                font-weight: 600;
-                font-family: 'Fredoka', sans-serif;
-                padding: 6px 14px;
-                border-radius: 20px;
-                border: 1.5px solid rgba(156,39,176,0.3);
-                transition: all 0.2s;
-            ">
-                Jouer en Lego
-            </a>
+            <?php
+            // Make url
+            $game_url = "http://localhost:3001/";
+
+            // If user LogIn we can see his id
+            if (class_exists('UserSession') && UserSession::isAuthenticated()) {
+                // Надійно отримуємо ID з сесії
+                $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? null;
+                
+                if ($session_id) {
+                    $game_url .= "?fidelityId=" . $session_id;
+                }
+            }
+            ?>
+            <a href="<?= $game_url ?>" class="footer-btn purple" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    color: #9C27B0;
+                    text-decoration: none;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    font-family: 'Fredoka', sans-serif;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    border: 1.5px solid rgba(156,39,176,0.3);
+                    transition: all 0.2s;
+                ">Jouer en Lego</a>
             
             <a href="https://github.com/Issam-BH/SAELego" target="_blank" rel="noopener noreferrer" style="
                 display: inline-flex;

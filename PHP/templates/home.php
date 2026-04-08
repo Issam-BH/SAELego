@@ -270,6 +270,20 @@ ob_start();
     
     <div class="auth-buttons">
         <?php if (class_exists('UserSession') && UserSession::isAuthenticated()): ?>
+            
+            <?php
+            require_once __DIR__ . '/../config/database.php';
+            $db_header = Database::getInstance();
+            
+            $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? 0;
+            
+            $stmt_pts = $db_header->prepare("SELECT points FROM users WHERE user_id = :id");
+            $stmt_pts->execute(['id' => $session_id]);
+            $current_points = $stmt_pts->fetchColumn() ?: 0;
+            ?>
+            <span style="background: #FFD700; color: #5a3d00; padding: 6px 15px; border-radius: 20px; font-weight: bold; margin-right: 15px; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                🪙 <?= $current_points ?> pts
+            </span>
             <span class="user-greeting">Salut, <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Fan de Lego') ?> !</span>
             
             <a href="index.php?page=history" class="btn-header btn-login">
@@ -321,7 +335,21 @@ ob_start();
 <footer>
     <p style="margin: 0;">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
     <div class="footer-links">
-        <a href="http://localhost:3000/" class="footer-btn purple">Jouer en Lego</a>
+        <?php
+        // Make url
+        $game_url = "http://localhost:3001/";
+
+        // If user LogIn we can see his id
+        if (class_exists('UserSession') && UserSession::isAuthenticated()) {
+            // Надійно отримуємо ID з сесії
+            $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? null;
+            
+            if ($session_id) {
+                $game_url .= "?fidelityId=" . $session_id;
+            }
+        }
+        ?>
+        <a href="<?= $game_url ?>" class="footer-btn purple">Jouer en Lego</a>
         <a href="https://github.com/Issam-BH/SAELego" target="_blank" class="footer-btn dark">GitHub</a>
     </div>
 </footer>
