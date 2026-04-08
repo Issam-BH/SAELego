@@ -2,8 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import GameBoard from './components/GameBoard';
 
-const socket = io('http://localhost:4001');
+const params = new URLSearchParams(window.location.search);
+const currentFidelityId = params.get('fidelityId');
 
+export const fidelityId = currentFidelityId ? currentFidelityId : 'guest_' + Math.floor(Math.random() * 10000);
+
+const socket = io('http://localhost:4001', { query: { fidelityId } });
 // --- COMPOSANT CHAT SORTI DE APP ---
 const ChatBox = ({ chatMessages, chatInput, setChatInput, sendChatMessage, messagesEndRef, currentSocketId }) => (
     <div style={{ border: '1px solid #ccc', borderRadius: '5px', width: '300px', display: 'flex', flexDirection: 'column', backgroundColor: '#f9f9f9', height: '300px', margin: '20px auto' }}>
@@ -54,8 +58,7 @@ export default function App() {
     useEffect(() => {
         // Extraction ID et URL pour invitation
         const params = new URLSearchParams(window.location.search);
-        const fid = params.get('fid') || 'GUEST_' + Math.floor(Math.random() * 10000);
-        setFidelityId(fid);
+        setFidelityId(fidelityId);
         
         const urlRoomCode = params.get('roomCode');
         if (urlRoomCode) {
@@ -145,7 +148,7 @@ export default function App() {
     };
 
     const copyInviteLink = () => {
-        const link = `${window.location.origin}${window.location.pathname}?roomCode=${roomCode}&fid=${fidelityId}`;
+        const link = `${window.location.origin}${window.location.pathname}?roomCode=${roomCode}&fidelityId=${fidelityId}`;
         navigator.clipboard.writeText(link);
         alert("Lien d'invitation copié !");
     };
@@ -178,7 +181,7 @@ export default function App() {
                     </div>
                 </div>
 
-                <a href="http://localhost/PHP/SAELego/PHP/public/index.php?page=home" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#0d6efd', color: 'white', textDecoration: 'none', borderRadius: '5px', marginTop: '20px' }}>
+                <a href="http://localhost/PHP/SAELego/PHP/public/index.php?page=games" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#0d6efd', color: 'white', textDecoration: 'none', borderRadius: '5px', marginTop: '20px' }}>
                     Retour sur le site
                 </a>
             </div>

@@ -7,6 +7,43 @@ const Player = require('./models/Player');
 const GameSession = require('./models/GameSession');
 const PavageService = require('./services/PavageService');
 
+
+async function sendPointsToPHP(userId, pointsEarned) {
+    console.log(`\n--- [Try send points] ---`);
+    console.log(`User ID: "${userId}"`);
+    console.log(`Points: ${pointsEarned}`);
+
+    if (userId.toLowerCase().startsWith('guest_')) {
+        console.log('❌ User are not login.');
+        return;
+    }
+    if (pointsEarned <= 0) {
+        console.log('❌ User have 0 points.');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost/PHP/SAELego/PHP/public/api_points.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                user_id: userId, 
+                add_points: pointsEarned 
+            })
+        });
+        
+        const textData = await response.text(); 
+        console.log(`Request from PHP server:`, textData);
+        
+        const data = JSON.parse(textData);
+        if (data.success) {
+            console.log(`✅ Good, new points: ${data.new_total}`);
+        }
+    } catch (error) {
+        console.error('❌ Error, conection with PHP:', error);
+    }
+}
+
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
@@ -78,17 +115,20 @@ async function generateAndStartGame(room, mode, players, playerIds) {
 
 io.on('connection', (socket) => {
     
+    const realFidelityId = socket.handshake.query.fidelityId || 'guest_' + Math.floor(Math.random() * 10000);
+    socket.fidelityId = realFidelityId;
+
     // --- MODE SOLO CLASSIQUE ---
-    socket.on('join_game', async ({ fidelityId, mode }) => {
-        socket.fidelityId = fidelityId;
+    socket.on('join_game', async (data) => {
         try {
-            let player = await Player.findOne({ fidelityId });
-            if (!player) await Player.updateOne({ fidelityId }, { $set: { fidelityId } }, { upsert: true });
+            let player = await Player.findOne({ fidelityId: realFidelityId });
+            if (!player) await Player.updateOne({ fidelityId: realFidelityId }, { $set: { fidelityId: realFidelityId } }, { upsert: true });
         } catch (e) { console.error("Avertissement MongoDB:", e.message); }
 
         let room = `room_solo_${Date.now()}`;
         socket.join(room);
-        await generateAndStartGame(room, 'solo', [socket.id], { [socket.id]: fidelityId });
+        
+        await generateAndStartGame(room, 'solo', [socket.id], { [socket.id]: realFidelityId });
     });
 
     // --- MODE DUPLICATE : CREATION ---
@@ -198,7 +238,9 @@ async function endGame(room) {
     try {
         for (const socketId of game.players) {
             const fid = game.playerIds[socketId];
-            await Player.updateOne({ fidelityId: fid }, { $inc: { loyaltyPoints: game.scores[socketId] } });
+            const pointsEarned = game.scores[socketId];
+            await Player.updateOne({ fidelityId: fid }, { $inc: { loyaltyPoints: pointsEarned } });
+            sendPointsToPHP(fid, pointsEarned);
         }
         await new GameSession({ players: Object.values(game.playerIds), mode: game.mode, scores: game.scores }).save();
     } catch (err) {

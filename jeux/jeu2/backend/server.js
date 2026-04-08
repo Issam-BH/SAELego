@@ -168,7 +168,7 @@ async function endGame(code, forcedWinnerId = null) {
 
     for (let wid of winners) {
         let w = room.players[wid];
-        let pts = Math.floor(w.score / 10);
+        let pts = w.score;
         if (isDraw && room.mode === 'duplicate') pts = Math.floor(pts / 2);
         
         if (pts > 0) {

@@ -40,7 +40,7 @@
     if (class_exists('UserSession') && UserSession::isAuthenticated()) {
         $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? null;
         if ($session_id) {
-            $user_id_param = "?user_id=" . $session_id; 
+            $user_id_param = "?fidelityId=" . $session_id; 
             $fidelity_id_param = "?fidelityId=" . $session_id;
         }
     }
