@@ -13,3 +13,5 @@ jeux/jeu1/backend/node_modules/
 
 Dockerfile
 .yml
+jeux/jeu2/frontend/env
+jeux/jeu1/frontend/env
