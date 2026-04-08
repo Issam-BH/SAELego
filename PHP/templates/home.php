@@ -277,12 +277,12 @@ ob_start();
             
             $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? 0;
             
-            $stmt_pts = $db_header->prepare("SELECT points FROM users WHERE user_id = :id");
+            $stmt_pts = $db_header->prepare("SELECT coins FROM users WHERE user_id = :id");
             $stmt_pts->execute(['id' => $session_id]);
             $current_points = $stmt_pts->fetchColumn() ?: 0;
             ?>
             <span style="background: #FFD700; color: #5a3d00; padding: 6px 15px; border-radius: 20px; font-weight: bold; margin-right: 15px; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                🪙 <?= $current_points ?> pts
+                🪙 <?= $current_points ?> coins
             </span>
             <span class="user-greeting">Salut, <?= htmlspecialchars($_SESSION['user']['username'] ?? 'Fan de Lego') ?> !</span>
             

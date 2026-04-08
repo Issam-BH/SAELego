@@ -190,6 +190,61 @@ class AuthController {
         }
         require __DIR__ . '/../../templates/profile.php';
     }
+    public function exchange() {
+        // check if user login
+        if (!UserSession::isAuthenticated()) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['package'])) {
+            $package_points = intval($_POST['package']);
+            
+            // define conversion rates
+            $conversion_rates = [
+                1000 => 1,
+                10000 => 12,
+                100000 => 150
+            ];
+
+            // If someone trie to send an invalid package, we stop them
+            if (!array_key_exists($package_points, $conversion_rates)) {
+                $_SESSION['error'] = "Pack d'échange invalide.";
+                header('Location: index.php?page=coupons'); 
+                exit;
+            }
+
+            $coins_to_add = $conversion_rates[$package_points];
+            $user_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'];
+
+            require_once __DIR__ . '/../../config/database.php';
+            $db = Database::getInstance();
+            
+            // Get current points
+            $stmt = $db->prepare("SELECT points FROM users WHERE user_id = :id");
+            $stmt->execute(['id' => $user_id]);
+            $current_points = $stmt->fetchColumn();
+
+            // Check if the user has enough points
+            if ($current_points >= $package_points) {
+                // Subtract points and add coins
+                $update_stmt = $db->prepare("UPDATE users SET points = points - :points, coins = coins + :coins WHERE user_id = :id");
+                $update_stmt->execute([
+                    'points' => $package_points,
+                    'coins' => $coins_to_add,
+                    'id' => $user_id
+                ]);
+
+                $_SESSION['success'] = "Échange réussi ! Vous avez reçu $coins_to_add Coin(s).";
+            } else {
+                $_SESSION['error'] = "Points insuffisants pour cet échange.";
+            }
+        }
+        
+        // Redirect back to coupons page with success or error message
+        header('Location: index.php?page=coupons');
+        exit;
+    }
 
     public function forgotPassword() {
         $message = null;

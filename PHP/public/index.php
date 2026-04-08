@@ -50,6 +50,7 @@ switch ($page) {
         $controller->profile();
         break;
 
+   
     case 'preview':
         if (isset($_GET['id_upload'])) {
             $controller = new MosaicController();
@@ -114,6 +115,12 @@ switch ($page) {
         $controller = new AuthController();
         $controller->coupons();
         break;
+
+     case 'exchange':
+        $controller = new AuthController();
+        $controller->exchange();
+        break;
+
 
     default:
         http_response_code(404);
