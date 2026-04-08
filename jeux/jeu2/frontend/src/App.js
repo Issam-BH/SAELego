@@ -92,6 +92,9 @@ export default function App() {
                     <input type="text" placeholder="Code" value={inputCode} onChange={e => setInputCode(e.target.value)} />
                     <button className="btn" onClick={joinRoom}>Rejoindre</button>
                 </div>
+                <a href="http://localhost/PHP/SAELego/PHP/public/index.php?page=games" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#0d6efd', color: 'white', textDecoration: 'none', borderRadius: '5px', marginTop: '20px' }}>
+                    Retour sur le site
+                </a>
             </div>
         );
     }
