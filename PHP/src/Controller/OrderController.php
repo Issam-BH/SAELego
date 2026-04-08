@@ -46,12 +46,36 @@ class OrderController {
 
             $basePrice = (float) $_POST['total_price'];
             $couponCode = strtoupper(trim($_POST['coupon_code'] ?? ''));
+            
+            $usedCoins = intval($_POST['used_coins'] ?? 0);
             $discount = 0;
-
             if ($couponCode === 'LEGO10') $discount = $basePrice * 0.10;
             if ($couponCode === 'LEGO20') $discount = $basePrice * 0.20;
             
-            $finalPrice = $basePrice - $discount;
+            $priceAfterCoupon = $basePrice - $discount;
+
+            if ($usedCoins > 0) {
+                if ($usedCoins > $priceAfterCoupon) {
+                    $usedCoins = floor($priceAfterCoupon);
+                }
+
+                $stmt_deduct = $pdo->prepare("UPDATE users SET coins = coins - :coins WHERE user_id = :uid AND coins >= :coins_check");
+                $stmt_deduct->execute([
+                    ':coins' => $usedCoins,
+                    ':coins_check' => $usedCoins,
+                    ':uid' => $userId
+                ]);
+
+                if ($stmt_deduct->rowCount() === 0) {
+                    $_SESSION['error'] = "Erreur : Solde de coins insuffisant.";
+                    header('Location: index.php?page=order'); 
+                    exit;
+                }
+            }
+
+            $finalPrice = $priceAfterCoupon - $usedCoins;
+            if ($finalPrice < 0) $finalPrice = 0; 
+
             $paymentMethod = $_POST['payment_method'] === 'paypal' ? 'paypal_sandbox' : 'card';
 
             $sqlAddr = "INSERT INTO address (user_id, line1, city, postal_code, country, is_default) VALUES (:uid, :line1, :city, :cp, :country, 1)";
@@ -96,7 +120,13 @@ class OrderController {
                 <div style='font-family: Arial, sans-serif; color: #333;'>
                     <h2>Merci pour votre achat {$user['nickname']} !</h2>
                     <p>Votre commande <strong>$orderRef</strong> a été validée avec succès.</p>
-                    <p>Montant total payé : <strong>" . number_format($finalPrice, 2) . " €</strong>.</p>
+                    <p>Montant total payé : <strong>" . number_format($finalPrice, 2) . " €</strong>.</p>";
+                    
+            if ($usedCoins > 0) {
+                $emailBody .= "<p>Coins utilisés : <strong>$usedCoins</strong></p>";
+            }
+            
+            $emailBody .= "
                     <p>Moyen de paiement : <strong>" . strtoupper($paymentMethod) . "</strong></p>
                     <hr>
                     <p>Vous pouvez dès à présent télécharger vos plans de construction et inventaires CSV depuis votre espace client.</p>
