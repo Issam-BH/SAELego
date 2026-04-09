@@ -48,7 +48,7 @@ if ($user_id) {
                 'id' => 2,
                 'title' => 'Vous nous manquez !',
                 'message' => 'Revenez jouer pour gagner des points de fidélité !',
-                'url' => 'http://10.0.2.2:3000'
+                'url' => 'http://10.0.2.2/SAELego/PHP/public/index.php?page=games'
             ];
         }
     }
