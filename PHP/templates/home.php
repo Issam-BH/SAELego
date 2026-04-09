@@ -227,6 +227,17 @@ ob_start();
         .upload-panel { width: 90%; }
     }
 
+    .upload-panel {
+    transition: all 0.3s ease;
+    border: 3px dashed transparent;
+}
+
+    .upload-panel.dragover {
+        border-color: #9C27B0;
+        background-color: rgba(156, 39, 176, 0.05);
+        transform: scale(1.02);
+    }
+
     /* Style ajouté uniquement pour le footer */
     footer {
         background: white;
@@ -263,6 +274,7 @@ ob_start();
         color: #333;
         border: 1.5px solid rgba(51,51,51,0.3);
     }
+    
 </style>
 
 <header>
@@ -317,12 +329,12 @@ ob_start();
             </div>
         </div>
 
-        <div class="upload-panel">
+        <div class="upload-panel" id="drop-zone">
             <h2>Lachez votre image ici et laissez la magie opérer</h2>
             <form action="index.php?page=upload" method="POST" enctype="multipart/form-data">
                 <div class="file-input-group">
                     <label for="userImage" class="file-label-btn">Parcourir</label>
-                    <span class="file-name-display" id="fileName">image.png</span>
+                    <span class="file-name-display" id="fileName">Aucun fichier choisi</span>
                     <input type="file" name="userImage" id="userImage" accept=".jpg,.jpeg,.png,.webp" required onchange="updateFileName()">
                 </div>
                 <button type="submit" class="btn-submit">Envoyer</button>
@@ -349,13 +361,45 @@ ob_start();
 <script>
     function updateFileName() {
         const input = document.getElementById('userImage');
-        const fileNameDisplay = document.getElementById('fileName');
-        if (input.files.length > 0) {
-            fileNameDisplay.textContent = input.files[0].name;
+        const display = document.getElementById('fileName');
+        if (input.files && input.files.length > 0) {
+            display.textContent = input.files[0].name;
         } else {
-            fileNameDisplay.textContent = 'image.png';
+            display.textContent = "Aucun fichier choisi";
         }
     }
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('userImage');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+    });
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files && files.length > 0) {
+            if (files[0].type.startsWith('image/')) {
+                fileInput.files = files; 
+                updateFileName(); 
+            } else {
+                alert("Veuillez glisser une image valide (JPG, PNG, WEBP).");
+            }
+        }
+    });
 </script>
 
 <?php
