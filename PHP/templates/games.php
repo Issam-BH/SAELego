@@ -56,7 +56,7 @@
                 <div class="card-body p-4 text-center">
                     <h3 class="fw-bold mb-3" style="font-family: 'Fredoka', sans-serif;">Créateur de Mosaïque</h3>
                     <p class="text-muted mb-4">Laissez libre cours à votre imagination. Placez les briques sur la grille et créez des œuvres d'art uniques en Lego.</p>
-                    <a href="http://localhost:3000/<?= $user_id_param ?>" class="btn w-100 py-3 fw-bold" style="background-color: #4facfe; color: white; border-radius: 10px; font-size: 1.1rem;">
+                    <a href="http://<?= $_SERVER['SERVER_NAME'] ?>:3000/<?= $user_id_param ?>" class="btn w-100 py-3 fw-bold" style="background-color: #4facfe; color: white; border-radius: 10px; font-size: 1.1rem;">
                         <i class="bi bi-play-fill me-2"></i> Jouer maintenant
                     </a>
                 </div>

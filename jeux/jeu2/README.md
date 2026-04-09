@@ -58,12 +58,12 @@ Lancement de l'application :
 
 npm start
 ```
-L'application sera accessible sur http://localhost:3000.
+L'application sera accessible sur http://localhost:3001.
 Tester avec un identifiant de fidelite specifique
 
 Le frontend recupere l'identifiant de fidelite du client directement depuis l'URL. Si aucun identifiant n'est fourni, un identifiant "guest" est genere aleatoirement.
 
 Pour simuler la connexion depuis le site PHP de la boutique avec un client precis, vous pouvez ajouter le parametre fidelityId dans l'URL de votre navigateur :
-http://localhost:3000/?fidelityId=VOTRE_ID_CLIENT
+http://localhost:3001/?fidelityId=VOTRE_ID_CLIENT
 
 A la fin de la partie (par blocage ou abandon), les points seront enregistres dans la collection players et l'historique de la session dans la collection gamesessions sous cet identifiant.
