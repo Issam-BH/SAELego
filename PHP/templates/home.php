@@ -311,9 +311,9 @@ ob_start();
         <div class="hero-panel">
             <h1>Transformez vos images en tableau de briques</h1>
             <div class="transformation-viz">
-                <img src="https://media.discordapp.net/attachments/1285145800032129047/1473266897633022043/pexels-serap-sagbas-2149016901-30583565.jpg?ex=69959638&is=699444b8&hm=291925242816580126e792afbf12d18dad5e3913a5d57794145235f933f4b24f&=&format=webp&width=533&height=800" alt="Original" class="viz-img">
+                <img src="assets/img/demo-original.jpg" alt="Original" class="viz-img">
                 <div class="arrow-red">➜</div>
-                <img src="https://media.discordapp.net/attachments/1285145800032129047/1473266895959494873/mosaique_finale5.png?ex=69959637&is=699444b7&hm=1c8817da876373a7304638fd75ed21eb782a82a79e1c7982574ab2c5aeb259a5&=&format=webp&quality=lossless&width=800&height=800" alt="Pixel Art" class="viz-img" style="image-rendering: pixelated;">
+                <img src="assets/img/demo-pixelart.svg" alt="Pixel Art" class="viz-img" style="image-rendering: pixelated;">
             </div>
         </div>
 
