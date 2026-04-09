@@ -48,12 +48,13 @@ public class MainActivity extends AppCompatActivity {
         }
         webView.loadUrl(url);
 
-        PeriodicWorkRequest pingRequest = new PeriodicWorkRequest.Builder(PingWorker.class, 24, TimeUnit.HOURS).build();
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                "DailyPingWork",
-                ExistingPeriodicWorkPolicy.KEEP,
-                pingRequest
-        );
+        PeriodicWorkRequest periodicPingRequest = new PeriodicWorkRequest.Builder(
+                PingWorker.class,
+                24, TimeUnit.HOURS)
+                .setInitialDelay(15, TimeUnit.MINUTES)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(periodicPingRequest);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
