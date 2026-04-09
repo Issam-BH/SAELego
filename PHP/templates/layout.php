@@ -251,6 +251,11 @@
                 <i class="bi bi-github"></i> GitHub
             </a>
         </div>
+        <div class="text-center mt-3 mb-3">
+            <a href="apk/LegoStore_v1.apk" class="btn btn-outline-success fw-bold" download>
+                <i class="bi bi-android2"></i> Télécharger notre application Android
+            </a>
+        </div>
     </div>
 </footer>
 <?php if (class_exists('UserSession') && UserSession::isAuthenticated()): ?>

@@ -71,7 +71,7 @@
                 <div class="card-body p-4 text-center">
                     <h3 class="fw-bold mb-3" style="font-family: 'Fredoka', sans-serif;">Casse-Briques Lego</h3>
                     <p class="text-muted mb-4">Un défi de réflexion ! Placez les blocs aléatoires pour compléter des lignes, détruisez-les et accumulez un maximum de points.</p>
-                    <a href="http://localhost:3001/<?= $fidelity_id_param ?>" class="btn w-100 py-3 fw-bold" style="background-color: #ff0844; color: white; border-radius: 10px; font-size: 1.1rem;">
+                    <a href="http://<?= $_SERVER['SERVER_NAME'] ?>:3001/<?= $user_id_param ?>" class="btn w-100 py-3 fw-bold" style="background-color: #ff0844; color: white; border-radius: 10px; font-size: 1.1rem;">
                         <i class="bi bi-play-fill me-2"></i> Jouer maintenant
                     </a>
                 </div>

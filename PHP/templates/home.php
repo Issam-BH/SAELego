@@ -338,10 +338,14 @@ ob_start();
         <a href="index.php?page=games" class="footer-btn purple">
             <i class="bi bi-controller"></i> Espace Jeux
         </a>
-        <a href="https://github.com/Issam-BH/SAELego" target="_blank" class="footer-btn dark">GitHub</a>
+        <a href="https://github.com/Issam-BH/SAELego" target="_blank" class="footer-btn dark">
+            <i class="bi bi-github"></i> GitHub
+        </a>
+        <a href="apk/LegoStore_v1.apk" class="footer-btn dark" style="color: #3DDC84; border-color: #3DDC84;" download>
+            <i class="bi bi-android2"></i> App Android
+        </a>
     </div>
 </footer>
-
 <script>
     function updateFileName() {
         const input = document.getElementById('userImage');

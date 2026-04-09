@@ -1,5 +1,6 @@
 package fr.univ_eiffel.android_legostore;
 
+import android.webkit.WebChromeClient;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webView.setWebViewClient(new WebViewClient());
+        webView.setWebChromeClient(new WebChromeClient());
 
         webView.addJavascriptInterface(new WebAppInterface(this), "AndroidInterface");
 

@@ -7,7 +7,7 @@ const currentFidelityId = params.get('fidelityId');
 
 export const fidelityId = currentFidelityId ? currentFidelityId : 'guest_' + Math.floor(Math.random() * 10000);
 
-const socket = io('http://localhost:4001', { query: { fidelityId } });
+const socket = io('http://' + window.location.hostname + ':4001', { query: { fidelityId } });
 // --- COMPOSANT CHAT SORTI DE APP ---
 const ChatBox = ({ chatMessages, chatInput, setChatInput, sendChatMessage, messagesEndRef, currentSocketId }) => (
     <div style={{ border: '1px solid #ccc', borderRadius: '5px', width: '300px', display: 'flex', flexDirection: 'column', backgroundColor: '#f9f9f9', height: '300px', margin: '20px auto' }}>
@@ -181,7 +181,7 @@ export default function App() {
                     </div>
                 </div>
 
-                <a href="http://localhost/PHP/SAELego/PHP/public/index.php?page=games" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#0d6efd', color: 'white', textDecoration: 'none', borderRadius: '5px', marginTop: '20px' }}>
+               <a href={'http://' + window.location.hostname + '/SAELego/PHP/public/index.php?page=games'} style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#0d6efd', color: 'white', textDecoration: 'none', borderRadius: '5px', marginTop: '20px' }}>
                     Retour sur le site
                 </a>
             </div>

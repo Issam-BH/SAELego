@@ -21,7 +21,7 @@ async function sendPointsToPHP(userId, pointsEarned) {
     }
 
     try {
-        const response = await fetch('http://localhost/PHP/SAELego/PHP/public/api_points.php', {
+        const response = await fetch('http://localhost/SAELego/PHP/public/api_points.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
