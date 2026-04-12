@@ -206,7 +206,7 @@ async function endGame(code, forcedWinnerId = null) {
         scores: scoresMap,
         isDraw: isDraw,
         forfeit: !!forcedWinnerId,
-        pointsAwarded: totalPointsAwarded > 0
+        hasStored: totalPointsAwarded > 0
     });
 
     if (totalPointsAwarded > 0 || room.mode === 'duplicate') {
