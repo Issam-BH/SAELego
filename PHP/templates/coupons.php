@@ -138,8 +138,7 @@
         <?php
         $current_points = 0;
         $current_coins = 0;
-        
-        // Fetch user data if authenticated
+
         if (class_exists('UserSession') && UserSession::isAuthenticated()) {
             require_once __DIR__ . '/../config/database.php';
             $db_page = Database::getInstance();

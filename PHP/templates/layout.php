@@ -206,12 +206,9 @@
         <p class="mb-0">&copy; <?= date('Y') ?> IMG2BRICKS. Turn photos into fun.</p>
         <div class="d-flex justify-content-center gap-3 mt-2">
             <?php
-            // Make url
             $game_url = "http://localhost:3001/";
 
-            // If user LogIn we can see his id
             if (class_exists('UserSession') && UserSession::isAuthenticated()) {
-                // Надійно отримуємо ID з сесії
                 $session_id = $_SESSION['user']['id'] ?? $_SESSION['user']['user_id'] ?? null;
                 
                 if ($session_id) {
